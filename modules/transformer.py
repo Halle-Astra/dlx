@@ -9,8 +9,15 @@ from .attention import (
 
 class Transformer(nn.Module):
     """Reproduction of paper `Attention Is All You Need`."""
-    def __init__(self):
+    def __init__(self, n_encoder=6, n_decoder=6, d_model=512):
         super().__init__()
+        self.encoder = nn.ModuleList([TransformerEncoderUnit(d_model=d_model) for i in range(n_encoder)])
+        self.decoder = nn.ModuleList([TransformerDecoderUnit(d_model=d_model) for i in range(n_decoder)])
+
+    def forward(self, embeddings):
+        memory = self.encoder(embeddings)
+        output = self.decoder(embeddings, memory)
+        return output
 
 
 
@@ -89,18 +96,21 @@ class TransformerDecoderUnit(nn.Module):
         self.masked_multi_head_attention = MultiHeadAttention(d_model, multi_head, mask=True)
         self.layer_norm = nn.LayerNorm(d_model)
         self.q_creator = QKVCreator(d_model,q_only=True)
+        self.kv_creator = QKVCreator(d_model, kv_only=True)
         self.multi_head_attention = MultiHeadAttention(d_model, multi_head)
         self.ffn = FeedForwardNetwork(d_model, d_ff)
 
-    def forward(self, embeddings, encoder_keys=None, encoder_values=None):
+    def forward(self, embeddings, memory=None):#, encoder_keys=None, encoder_values=None):
         Q, K, V = self.qkv_creator(embeddings)
         output = self.masked_multi_head_attention(Q, K, V)
         output += embeddings
         output = self.layer_norm(output)
         decoder_q = self.q_creator(output)
+        memory_keys, memory_values = self.kv_creator(memory)
 
         # output from cross attention
-        output_x_att = self.multi_head_attention(decoder_q, encoder_keys, encoder_values)
+        # output_x_att = self.multi_head_attention(decoder_q, encoder_keys, encoder_values)
+        output_x_att = self.multi_head_attention(decoder_q, memory_keys, memory_values)
 
         output += output_x_att
         output = self.layer_norm(output)

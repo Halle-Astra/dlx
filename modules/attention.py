@@ -75,10 +75,13 @@ class QKVCreator(nn.Module):
         W_v = Parameter(torch.tensor((d_input, d_v)))
         if q_only:
             self.Ws = nn.ParameterList([W_q])
+            del W_k, W_v
         elif kv_only:
             self.Ws = nn.ParameterList([W_k, W_v])
+            del W_q
         else:
             self.Ws = nn.ParameterList([W_q, W_k, W_v])
+
         self.q_only = q_only
         self.kv_only = kv_only
 
