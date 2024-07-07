@@ -11,13 +11,14 @@ class Transformer(nn.Module):
     """Reproduction of paper `Attention Is All You Need`."""
     def __init__(self, n_encoder=6, n_decoder=6, d_model=512):
         super().__init__()
-        self.encoder = nn.ModuleList([TransformerEncoderUnit(d_model=d_model) for i in range(n_encoder)])
+        self.encoder = nn.Sequential(*[TransformerEncoderUnit(d_model=d_model) for i in range(n_encoder)])
         self.decoder = nn.ModuleList([TransformerDecoderUnit(d_model=d_model) for i in range(n_decoder)])
 
     def forward(self, embeddings):
         memory = self.encoder(embeddings)
-        output = self.decoder(embeddings, memory)
-        return output
+        for layer in self.decoder:
+            embeddings = layer(embeddings, memory)
+        return embeddings
 
 
 

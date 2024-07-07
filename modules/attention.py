@@ -16,9 +16,9 @@ class SelfAttention(nn.Module):
         super().__init__()
         if d_k is None: d_k = d_input
         if d_v is None: d_v = d_input
-        self.W_q = Parameter(torch.tensor((d_input, d_k)))
-        self.W_k = Parameter(torch.tensor((d_input, d_k)))
-        self.W_v = Parameter(torch.tensor((d_input, d_v)))
+        self.W_q = Parameter(torch.randn((d_input, d_k)))
+        self.W_k = Parameter(torch.randn((d_input, d_k)))
+        self.W_v = Parameter(torch.randn((d_input, d_v)))
 
         self.scaled_dpa = ScaledDotProductAttention(d_k, mask=mask)
         pass
@@ -36,22 +36,29 @@ class SelfAttention(nn.Module):
         return output
 
 
+def get_mask(d_mask, diagnol, dtype=torch.float32):
+    mask = -torch.inf * torch.ones((d_mask, d_mask), requires_grad=False, dtype=dtype)
+    mask = torch.triu(mask, diagnol)
+    return mask
+
+
 class ScaledDotProductAttention(nn.Module):
-    def __init__(self, d_k, mask=None, d_mask=None, diagnol=1):
+    def __init__(self, d_k, mask=False, d_mask=None, diagnol=1):
         super().__init__()
         self.d_k = d_k
-        if mask is not None:
-            if isinstance(mask, bool) and mask:
-                assert d_mask is not None, "d_mask must be set when mask=True"
-                mask = -torch.inf * torch.ones((d_mask, d_mask), requires_grad=False)
-                mask = torch.triu(mask, diagnol)
+        # if mask is not None:
+        #     if isinstance(mask, bool) and mask:
+        #         assert d_mask is not None, "d_mask must be set when mask=True"
+
         self.mask = mask
+        self.diagnol = diagnol
 
     def forward(self, Q, K, V):
-        sim = torch.matmul(Q, K.T)
+        sim = torch.matmul(Q, torch.permute(K, (0, 2, 1)))
         sim = sim / self.d_k ** 0.5
-        if self.mask is not None:
-            sim += self.mask
+        if self.mask:
+            mask = get_mask(Q.shape[1], self.diagnol, Q.dtype)
+            sim += mask
 
         weights = F.softmax(sim, dim=-1)
         output = torch.matmul(weights, V)
@@ -70,9 +77,9 @@ class QKVCreator(nn.Module):
         super().__init__()
         if d_k is None: d_k = d_input
         if d_v is None: d_v = d_input
-        W_q = Parameter(torch.tensor((d_input, d_k)))
-        W_k = Parameter(torch.tensor((d_input, d_k)))
-        W_v = Parameter(torch.tensor((d_input, d_v)))
+        W_q = Parameter(torch.randn((d_input, d_k)))
+        W_k = Parameter(torch.randn((d_input, d_k)))
+        W_v = Parameter(torch.randn((d_input, d_v)))
         if q_only:
             self.Ws = nn.ParameterList([W_q])
             del W_k, W_v
@@ -107,13 +114,13 @@ class MultiHeadAttention(nn.Module):
         self.d_k = d_k
         self.h = h
 
-        self.scaled_dpa = ScaledDotProductAttention(d_k, mask=mask, d_mask=d_input)
+        self.scaled_dpa = ScaledDotProductAttention(d_k, mask=mask, d_mask=d_k)
 
-        self.Q_rotation_matrices = nn.ParameterList([Parameter(torch.tensor((d_input, d_k)))
+        self.Q_rotation_matrices = nn.ParameterList([Parameter(torch.randn((d_input, d_k)))
                                                      for i in range(h)])
-        self.K_rotation_matrices = nn.ParameterList([Parameter(torch.tensor((d_input, d_k)))
+        self.K_rotation_matrices = nn.ParameterList([Parameter(torch.randn((d_input, d_k)))
                                                      for i in range(h)])
-        self.V_rotation_matrices = nn.ParameterList([Parameter(torch.tensor((d_input, d_v)))
+        self.V_rotation_matrices = nn.ParameterList([Parameter(torch.randn((d_input, d_v)))
                                                      for i in range(h)])
 
         self.linear = nn.Linear(d_v * h, d_input, bias=False)
