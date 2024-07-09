@@ -9,16 +9,19 @@ from .attention import (
 
 class Transformer(nn.Module):
     """Reproduction of paper `Attention Is All You Need`."""
-    def __init__(self, n_encoder=6, n_decoder=6, d_model=512):
+    def __init__(self, n_encoder=6, n_decoder=6, d_model=512, d_output=512):
         super().__init__()
         self.encoder = nn.Sequential(*[TransformerEncoderUnit(d_model=d_model) for i in range(n_encoder)])
         self.decoder = nn.ModuleList([TransformerDecoderUnit(d_model=d_model) for i in range(n_decoder)])
-
+        self.linear = nn.Linear(d_model, d_output)
+        self.softmax = nn.Softmax(dim=-1)
     def forward(self, embeddings):
         memory = self.encoder(embeddings)
         for layer in self.decoder:
             embeddings = layer(embeddings, memory)
-        return embeddings
+        output = self.linear(embeddings)
+        output = self.softmax(output)
+        return output
 
 
 
