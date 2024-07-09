@@ -46,9 +46,6 @@ class ScaledDotProductAttention(nn.Module):
     def __init__(self, d_k, mask=False, d_mask=None, diagnol=1):
         super().__init__()
         self.d_k = d_k
-        # if mask is not None:
-        #     if isinstance(mask, bool) and mask:
-        #         assert d_mask is not None, "d_mask must be set when mask=True"
 
         self.mask = mask
         self.diagnol = diagnol
@@ -107,10 +104,6 @@ class MultiHeadAttention(nn.Module):
         if d_v is None:
             d_v = d_input // h
 
-        # self.W_q = Parameter(torch.tensor((d_input, d_k)))
-        # self.W_k = Parameter(torch.tensor((d_input, d_k)))
-        # self.W_v = Parameter(torch.tensor((d_input, d_v)))
-
         self.d_k = d_k
         self.h = h
 
@@ -126,9 +119,6 @@ class MultiHeadAttention(nn.Module):
         self.linear = nn.Linear(d_v * h, d_input, bias=False)
 
     def forward(self, Q, K, V):
-        # Q = torch.matmul(embeddings, self.W_q)
-        # K = torch.matmul(embeddings, self.W_k)
-        # V = torch.matmul(embeddings, self.W_v)
 
         Qs = [torch.matmul(Q, W_i) for W_i in self.Q_rotation_matrices]
         Ks = [torch.matmul(K, W_i) for W_i in self.K_rotation_matrices]
