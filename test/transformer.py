@@ -1,7 +1,7 @@
 import sys
 sys.path.append('../../')
 
-from dlx.modules.transformer import (
+from dlx.nn.modules.transformer import (
     TransformerDecoderUnit,
     TransformerEncoderUnit,
     Transformer
