@@ -10,35 +10,46 @@ from multiprocessing import (
 import random
 
 
-class Dataset:
-    def __init__(self, num_workers=8):
-        self.nw = num_workers
-
-    def init_processes(self):
-        self.processes = []
-
-
 class WorkerManager(Process):
-    def __init__(self, dataset_instance):
+    def __init__(self, dataset_instance, num_proc=8):
         self.ds = dataset_instance
         self.process_count = 0
+        self.processes = [Process(target=self.worker_func, args=(
+            self.ds.content_list,
+            self.ds.data_queue
+        ))]
 
     def worker_func(self, content_list, queue):
-        sample = random.choice(range(self.ds.contents_num))
+        try:
+            sample = random.choice(range(self.ds.contents_num))
+            title = sample['title']
+            content = sample['content']
+            text = '\n'.join([title, content])
+            queue.put(text)
+            self.process_count += 1
+            logger.info('process_count: {}'.format(self.process_count))
+        except Exception as e:
+            logger.error(str(e))
+
 
     def run(self):
+        for p in self.processes:
+            p.start()
         while True:
             if self.process_count % self.ds.change_file_iters == 0:
                 self.ds.rload_file()
 
 
 class WuDao:
-    def __init__(self, root, change_file_iters=2000):
+    def __init__(self, root, change_file_iters=2000, queue_size=1000):
         self.files = glob.glob(os.path.join(root, '*.json'))
         self.change_file_iters = change_file_iters
         self.current_file = None
         self.content_list = None
         self.contents_num = None
+        self.data_queue = Queue(maxsize=queue_size)
+        self.worker_manager = WorkerManager(self,8)
+        self.worker_manager.start()
 
     def start_worker(self):
         self.rload_file()
