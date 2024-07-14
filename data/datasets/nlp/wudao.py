@@ -68,3 +68,7 @@ class WuDao:
         # dataType, title, content,
         # id 虽然有用，但是id感觉没法一次性全部读入的情况下，还是蛮难用的。
         pass
+
+if __name__ == "__main__":
+    root = '/dataset/fd5061f6/chinese_data/WuDao/'
+    dataset = WuDao(root)
