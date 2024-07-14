@@ -5,23 +5,25 @@ import glob
 from threading import Thread
 from multiprocessing import (
     Process,
-    Queue
+    Queue,
+    Manager,
+    Value,
+    Array
 )
 import random
+from loguru import logger
 
-process_count = 0
 
-
-def worker_func(contents_num, content_list, queue):
+def worker_func(contents_num, content_list, queue, process_count):
     try:
-        sample = random.choice(range(contents_num))
+        sample_ind = random.choice(range(contents_num))
+        sample = content_list[sample_ind]
         title = sample['title']
         content = sample['content']
         text = '\n'.join([title, content])
         queue.put(text)
-        global process_count
-        process_count += 1
-        logger.info('process_count: {}'.format(self.process_count))
+        process_count.value += 1
+        logger.info('process_count: {}'.format(process_count.value))
     except Exception as e:
         logger.error(str(e))
 
@@ -30,11 +32,10 @@ class WorkerManager(Process):
     def __init__(self, dataset_instance, num_proc=8):
         self.ds = dataset_instance
 
-    def run(self):
-
-        global process_count
+    def run(self, *args, ):
+        logger.debug('inputs are :{}'.format(args))
         while True:
-            if process_count % self.ds.change_file_iters == 0:
+            if self.ds.process_count % self.ds.change_file_iters == 0:
                 self.ds.rload_file()
 
 
@@ -44,15 +45,20 @@ class WuDao:
         self.change_file_iters = change_file_iters
         self.current_file = None
         self.content_list = None
-        self.contents_num = None
+        self.contents_num = Value('i', 0)
         self.data_queue = Queue(maxsize=queue_size)
         self.worker_manager = WorkerManager(self,8)
-        self.worker_manager.start()
+        self.process_count = Value('i', 0)
 
-        self.workers = [Process(target=worker_func,
-                                args=(
+        self.worker_manager.start(self.process_count.value)
+        self.manageer = Manager()
 
-                                ))
+        self.workers = [Process(
+            target=worker_func,
+            args=(self.contents_num, self.content_list, self.data_queue, self.process_count)
+        ) for i in range(8)]
+        for w in self.workers:
+            w.start()
 
     def start_worker(self):
         self.rload_file()
@@ -60,9 +66,9 @@ class WuDao:
     def rload_file(self):
         self.current_file = random.choice(self.files)
         f = open(self.current_file)
-        self.content_list = json.load(f)
+        self.content_list = self.manager.list(json.load(f))
         f.close()
-        self.contents_num = len(self.content_list)
+        self.contents_num.value = len(self.content_list)
 
     def worker_func(self):
         pass
