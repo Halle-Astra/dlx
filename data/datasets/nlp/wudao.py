@@ -9,34 +9,32 @@ from multiprocessing import (
 )
 import random
 
+process_count = 0
+
+
+def worker_func(contents_num, content_list, queue):
+    try:
+        sample = random.choice(range(contents_num))
+        title = sample['title']
+        content = sample['content']
+        text = '\n'.join([title, content])
+        queue.put(text)
+        global process_count
+        process_count += 1
+        logger.info('process_count: {}'.format(self.process_count))
+    except Exception as e:
+        logger.error(str(e))
+
 
 class WorkerManager(Process):
     def __init__(self, dataset_instance, num_proc=8):
         self.ds = dataset_instance
-        self.process_count = 0
-        self.processes = [Process(target=self.worker_func, args=(
-            self.ds.content_list,
-            self.ds.data_queue
-        ))]
-
-    def worker_func(self, content_list, queue):
-        try:
-            sample = random.choice(range(self.ds.contents_num))
-            title = sample['title']
-            content = sample['content']
-            text = '\n'.join([title, content])
-            queue.put(text)
-            self.process_count += 1
-            logger.info('process_count: {}'.format(self.process_count))
-        except Exception as e:
-            logger.error(str(e))
-
 
     def run(self):
-        for p in self.processes:
-            p.start()
+
+        global process_count
         while True:
-            if self.process_count % self.ds.change_file_iters == 0:
+            if process_count % self.ds.change_file_iters == 0:
                 self.ds.rload_file()
 
 
@@ -50,6 +48,11 @@ class WuDao:
         self.data_queue = Queue(maxsize=queue_size)
         self.worker_manager = WorkerManager(self,8)
         self.worker_manager.start()
+
+        self.workers = [Process(target=worker_func,
+                                args=(
+
+                                ))
 
     def start_worker(self):
         self.rload_file()
