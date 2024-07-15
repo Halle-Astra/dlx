@@ -12,6 +12,7 @@ from multiprocessing import (
 )
 import random
 from loguru import logger
+from multiprocessing.managers import BaseManager
 
 def wf(*args):
     while True:
@@ -46,7 +47,7 @@ class WorkerManager(Process):
                 self.ds.rload_file()
 
 
-class WuDao:
+class WuDao(BaseManager):
     def __init__(self, root, change_file_iters=2000, queue_size=1000):
         self.files = glob.glob(os.path.join(root, '*.json'))
         self.change_file_iters = change_file_iters
@@ -66,6 +67,7 @@ class WuDao:
         ) for i in range(8)]
         for w in self.workers:
             w.start()
+        self.start()
 
     def start_worker(self):
         self.rload_file()
