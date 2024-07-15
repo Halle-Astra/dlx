@@ -23,6 +23,8 @@ def wf(*args):
 
 def worker_func(contents_num, content_list, queue, process_count, lock):  # 进程
     try:
+        logger.info('contents_num: {}, process_count: {}'.format(contents_num.value,
+                                                                 process_count.value))
         if contents_num.value == 0:
             return 
         sample_ind = random.choice(range(contents_num.value))
@@ -33,8 +35,7 @@ def worker_func(contents_num, content_list, queue, process_count, lock):  # 进�
         queue.put(text)
         lock.acquire()
         process_count.value += 1
-        logger.info('contents_num: {}, process_count: {}'.format(contents_num.value,
-                                                                 process_count.value))
+
         lock.release()
     except Exception as e:
         logger.error(str(e))
@@ -53,8 +54,7 @@ class WorkerManager(Thread):
                 except Exception as e:
                     logger.debug(e)
             logger.debug(f'current process_count: {self.ds.process_count.value}, data_q_size: {self.ds.data_queue.qsize()}')
-            if self.ds.current_file is None or \
-                    (self.ds.process_count.value > self.ds.change_file_iters):
+            if self.ds.current_file is None or (self.ds.process_count.value > self.ds.change_file_iters):
                 self.ds.rload_file()
                 self.ds.arrange_workers()
             time.sleep(10)
@@ -84,7 +84,7 @@ class WuDao:
     def arrange_workers(self):
         if self.workers is not None:
             for w in self.workers:
-                w.join()
+                # w.join()
                 w.terminate()
                 w.close()
         self.workers = [Process(
