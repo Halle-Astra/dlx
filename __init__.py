@@ -1,1 +1,1 @@
-from configs import DLX_HOME
+from .configs import DLX_HOME
