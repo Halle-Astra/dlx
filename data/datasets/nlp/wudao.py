@@ -15,6 +15,7 @@ import random
 from loguru import logger
 from multiprocessing.managers import BaseManager
 import time
+from dlx.tokenizer.tiktoken import Tokenizer
 
 
 def wf(*args):

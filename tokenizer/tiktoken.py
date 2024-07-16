@@ -46,14 +46,16 @@ class Tokenizer:
 
     pat_str = r"(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+"  # noqa: E501
 
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str='llama3-8B-instruct/tokenizer.model'):
         """
         Initializes the Tokenizer with a Tiktoken model.
 
         Args:
             model_path (str): The path to the Tiktoken model file.
         """
-        assert os.path.isfile(model_path), model_path
+        if not os.path.isfile(model_path):
+            from dlx import DLX_HOME
+            model_path = os.path.join(DLX_HOME, model_path)
 
         mergeable_ranks = load_tiktoken_bpe(model_path)
         num_base_tokens = len(mergeable_ranks)
