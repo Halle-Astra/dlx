@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
+    <option name="confirmBeforeUploading" value="false" />
     <serverData>
-      <paths name="biai@192.168.2.38:22">
+      <paths name="m1">
         <serverdata>
           <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="" local="$PROJECT_DIR$/.." web="/" />
+            <mapping deploy="/data/programs/LLMs/GLM/dlx" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
