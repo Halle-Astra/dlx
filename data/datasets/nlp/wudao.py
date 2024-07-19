@@ -93,13 +93,13 @@ class WuDao:
         self.tokenizer = Tokenizer()
 
         # start a thread to take data from queue
-        self.queue2list_thread = Thread(
-            target=self.queue2list,
+        self.generate_batch_thread = Thread(
+            target=self.generate_batch,
             args=(self,)
         )
-        self.queue2list_thread.start()
+        self.generate_batch_thread.start()
 
-    def queue2list(self, dataset_instance):
+    def generate_batch(self, dataset_instance):
         while not dataset_instance.watcher_exit_event.is_set():
             if dataset_instance.debug:
                 if not dataset_instance.data_queue.empty():
