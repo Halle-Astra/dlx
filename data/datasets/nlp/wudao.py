@@ -21,12 +21,6 @@ from dlx.tokenizer.tiktoken import Tokenizer
 def worker_func(contents_num, content_list, queue, process_count, lock, workers_exit, tokenizer):  # 进程
     while not workers_exit.is_set():
         try:
-            # logger.info('contents_num: {}, process_count: {}, data_queue_size:{}'.format(
-            #     contents_num.value,
-            #     process_count.value,
-            #     queue.qsize()
-            # ))
-
             if contents_num.value == 0:
                 return
             sample_ind = random.choice(range(contents_num.value))
@@ -48,7 +42,7 @@ class WorkerWatcher(Thread):
         super().__init__()
         self.ds = dataset_instance
 
-    def run(self, *args, ):
+    def run(self, *args,):
         while not self.ds.watcher_exit_event.is_set():
 
             # do this finally
@@ -61,8 +55,28 @@ class WorkerWatcher(Thread):
         logger.warning("WorkerWatcher is exiting.")
 
 
+def generate_batch(dataset_instance):
+    while not dataset_instance.watcher_exit_event.is_set():
+        if dataset_instance.debug:
+            if not dataset_instance.data_queue.empty():
+                dataset_instance.data_queue.get()
+        else:
+            if not dataset_instance.data_queue.empty():
+                batch = []
+                for i in range(dataset_instance.batch_size):
+                    sample = dataset_instance.data_queue.get()
+                    batch.append(sample)
+                dataset_instance.data_list.append(batch)
+                dataset_instance.length += 1
+
+
 class WuDao:
-    def __init__(self, root, change_file_iters=1000, queue_size=2000, batch_size=4, steps=250000):
+    def __init__(self, root,
+                 generate_batch_func=generate_batch,
+                 change_file_iters=1000,
+                 queue_size=2000,
+                 batch_size=4,
+                 steps=250000):
         self.files = glob.glob(os.path.join(root, '*.json'))
         self.debug = False
 
@@ -94,24 +108,10 @@ class WuDao:
 
         # start a thread to take data from queue
         self.generate_batch_thread = Thread(
-            target=self.generate_batch,
+            target=generate_batch_func,
             args=(self,)
         )
         self.generate_batch_thread.start()
-
-    def generate_batch(self, dataset_instance):
-        while not dataset_instance.watcher_exit_event.is_set():
-            if dataset_instance.debug:
-                if not dataset_instance.data_queue.empty():
-                    dataset_instance.data_queue.get()
-            else:
-                if not dataset_instance.data_queue.empty():
-                    batch = []
-                    for i in range(dataset_instance.batch_size):
-                        sample = dataset_instance.data_queue.get()
-                        batch.append(sample)
-                    dataset_instance.data_list.append(batch)
-                    dataset_instance.length += 1
 
     def __getitem__(self, *args):
         while True:
@@ -167,6 +167,9 @@ class WuDao:
         logger.warning("正在退出主进程")
         self.workers_exit_event.set()
         self.watcher_exit_event.set()
+
+    def sample_process(self, sample):
+        pass
 
 
 if __name__ == "__main__":
