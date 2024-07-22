@@ -1,5 +1,5 @@
 from torch import nn
-from dlx.train.llama3.trainer import Llama3Trainer
+from dlx.train.llm.trainer import Llama3Trainer
 import os
 from dlx.models.llm.llama3 import Transformer, ModelArgs
 import torch
