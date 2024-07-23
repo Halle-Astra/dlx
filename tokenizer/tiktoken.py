@@ -46,7 +46,7 @@ class Tokenizer:
 
     pat_str = r"(?i:'s|'t|'re|'ve|'m|'ll|'d)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+"  # noqa: E501
 
-    def __init__(self, model_path: str='llm-8B-instruct/tokenizer.model'):
+    def __init__(self, model_path: str='llama-8B-instruct/tokenizer.model'):
         """
         Initializes the Tokenizer with a Tiktoken model.
 
