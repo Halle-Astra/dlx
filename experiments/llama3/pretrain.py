@@ -38,7 +38,7 @@ if __name__ == '__main__':
     train_dataloader = WuDao(wudao_root)
 
     # model
-    ckpt_path = 'Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'
+    ckpt_path = '~/.cache/dlx/Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'
     weights = torch.load(ckpt_path, map_location="cpu")
     if not isinstance(weights, dict):
         te_weight = {'tok_embeddings.weight': weights}
