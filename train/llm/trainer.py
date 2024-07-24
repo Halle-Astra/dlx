@@ -1,19 +1,24 @@
+import os
 import random
 import numpy as np
+import torch
 from fairscale.nn.model_parallel.initialize import (
-            get_model_parallel_rank,
-            initialize_model_parallel,
-            model_parallel_is_initialized,
-        )
+    get_model_parallel_rank,
+    initialize_model_parallel,
+    model_parallel_is_initialized,
+)
+
 
 class AutoRegressiveTrainer:
     def __init__(self, model, dataloader,
-                 loss_modules, optimizer,
+                 loss_modules,
+                 optimizer=None,
                  world_size=None,
                  tokenizer=None,
                  kv_cache_enabled=False,
                  device='cuda',
-                 dtype=torch.float16):
+                 dtype=torch.float16,
+                 parallel=None):
         """
 
         :param model:
@@ -32,6 +37,9 @@ class AutoRegressiveTrainer:
         self.device = device
         self.dtype = dtype
         self.world_size = world_size
+
+        if parallel is not None and parallel == 'ddp':
+            self.init_parallel()
 
     def init_parallel(self):
         model_parallel_size = self.world_size
@@ -67,6 +75,8 @@ class AutoRegressiveTrainer:
                 input_x = torch.tensor(np.vstack(input_list), dtype=self.dtype).to(self.device)
                 input_y = torch.tensor(np.vstack(label_list), dtype=self.dtype).to(self.device)
 
+                print(input_x.shape)
+
                 output = self.model(input_x, start_index)
                 output = output[:, -1]
                 output_tid = torch.argmax(output, dim=-1)
@@ -79,3 +89,4 @@ class AutoRegressiveTrainer:
 
                 start_index = end_index
 
+                print(loss.item())

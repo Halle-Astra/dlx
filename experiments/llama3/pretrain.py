@@ -1,5 +1,5 @@
 from torch import nn
-from dlx.train.llm.trainer import Llama3Trainer
+from dlx.train.llm.trainer import AutoRegressiveTrainer
 import os
 from dlx.models.llm.llama3 import Transformer, ModelArgs
 import torch
@@ -8,18 +8,19 @@ from fairscale.nn.model_parallel.initialize import (
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
-model_parallel_size = 1
-if not torch.distributed.is_initialized():
-    torch.distributed.init_process_group("nccl")
-if not model_parallel_is_initialized():
-    if model_parallel_size is None:
-        model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
-    initialize_model_parallel(model_parallel_size)
+from dlx.data.datasets.nlp.wudao import WuDao
+import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.optim import Adam
+from torch.nn import CrossEntropyLoss
+from argparse import ArgumentParser
+from dlx.tokenizer.tiktoken import Tokenizer
+
 
 args = {
-   "dim": 4096,
-    "n_layers": 32,
-    "n_heads": 32,
+    "dim": 4096,
+    "n_layers": 3,
+    "n_heads": 2,
     "n_kv_heads": 8,
     "vocab_size": 128256,
     "multiple_of": 1024,
@@ -27,11 +28,36 @@ args = {
     "norm_eps": 1e-05,
     "rope_theta": 500000.0
 }
-args = ModelArgs(**args)
+margs = ModelArgs(**args)
 
-ckpt_path = 'Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'
-weights = torch.load(ckpt_path, map_location="cpu")
-model = Transformer(args)
-model.load_state_dict(weights)
-print(weights['tok_embeddings'])
-print(model)
+if __name__ == '__main__':
+    args_parser = ArgumentParser()
+    args_parser.add_argument('local_rank', type=int)
+    args = args_parser.parse_args()
+
+    # ddp setting
+    torch.cuda.set_device(args.local_rank)
+
+    # dataloader
+    wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'
+    train_dataloader = WuDao(wudao_root)
+
+    # model
+    ckpt_path = 'Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'
+    weights = torch.load(ckpt_path, map_location="cpu")
+    if not isinstance(weights, dict):
+        te_weight = {'tok_embeddings.weight': weights}
+    model = Transformer(margs)
+    model.load_state_dict(weights)
+    model = DDP(model)
+
+    # others
+    optimizer = Adam()
+    loss_func = CrossEntropyLoss()
+    tokenizer = Tokenizer()
+
+    trainer = AutoRegressiveTrainer(
+        model, train_dataloader, loss_func, optimizer,
+        2, tokenizer, True, torch.float32
+    )
+    trainer.start()
