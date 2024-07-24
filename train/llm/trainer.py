@@ -28,8 +28,8 @@ class AutoRegressiveTrainer:
         :param kv_cache_enabled:    determine the training strategy, like GPT if false, or like Llama3 if true, default
                                     value is false.
         """
-        if parallel is not None and parallel == 'ddp':
-            self.init_parallel()
+        # if parallel is not None and parallel == 'ddp':
+        #     self.init_parallel()
 
         self.model = model
         self.dataloader = dataloader

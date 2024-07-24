@@ -32,6 +32,14 @@ margs = ModelArgs(**args)
 
 if __name__ == '__main__':
     # ddp setting
+    torch.cuda.set_device(dist.get_rank())
+    model_parallel_size = 2
+    if not torch.distributed.is_initialized():
+        torch.distributed.init_process_group("nccl")
+    if not model_parallel_is_initialized():
+        if model_parallel_size is None:
+            model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
+        initialize_model_parallel(model_parallel_size)
 
     # dataloader
     wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'
