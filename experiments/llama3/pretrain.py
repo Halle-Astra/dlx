@@ -32,7 +32,6 @@ margs = ModelArgs(**args)
 
 if __name__ == '__main__':
     # ddp setting
-    torch.cuda.set_device(dist.get_rank())
 
     # dataloader
     wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'

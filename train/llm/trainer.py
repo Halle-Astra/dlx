@@ -7,6 +7,7 @@ from fairscale.nn.model_parallel.initialize import (
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
+import torch.distributed as dist
 
 
 class AutoRegressiveTrainer:
@@ -42,6 +43,7 @@ class AutoRegressiveTrainer:
             self.init_parallel()
 
     def init_parallel(self):
+        torch.cuda.set_device(dist.get_rank())
         model_parallel_size = self.world_size
         if not torch.distributed.is_initialized():
             torch.distributed.init_process_group("nccl")
