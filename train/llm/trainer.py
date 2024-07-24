@@ -28,6 +28,9 @@ class AutoRegressiveTrainer:
         :param kv_cache_enabled:    determine the training strategy, like GPT if false, or like Llama3 if true, default
                                     value is false.
         """
+        if parallel is not None and parallel == 'ddp':
+            self.init_parallel()
+
         self.model = model
         self.dataloader = dataloader
         if not isinstance(loss_modules, list):
@@ -39,8 +42,7 @@ class AutoRegressiveTrainer:
         self.dtype = dtype
         self.world_size = world_size
 
-        if parallel is not None and parallel == 'ddp':
-            self.init_parallel()
+
 
     def init_parallel(self):
         torch.cuda.set_device(dist.get_rank())
