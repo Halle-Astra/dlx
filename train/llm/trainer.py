@@ -1,16 +1,25 @@
 import random
 import numpy as np
-
+from fairscale.nn.model_parallel.initialize import (
+            get_model_parallel_rank,
+            initialize_model_parallel,
+            model_parallel_is_initialized,
+        )
 
 class AutoRegressiveTrainer:
-    def __init__(self, model, dataloader, loss_modules, tokenizer=None, model_with_kv_cache=False, device='cuda',
-                 dtype=None):
+    def __init__(self, model, dataloader,
+                 loss_modules, optimizer,
+                 world_size=None,
+                 tokenizer=None,
+                 kv_cache_enabled=False,
+                 device='cuda',
+                 dtype=torch.float16):
         """
 
         :param model:
         :param dataloader:          A dataloader which only generate a batch of list of token ids
         :param loss_modules:
-        :param model_with_kv_cache: determine the training strategy, like GPT if false, or like Llama3 if true, default
+        :param kv_cache_enabled:    determine the training strategy, like GPT if false, or like Llama3 if true, default
                                     value is false.
         """
         self.model = model
@@ -18,9 +27,20 @@ class AutoRegressiveTrainer:
         if not isinstance(loss_modules, list):
             loss_modules = [loss_modules]
         self.loss_modules = loss_modules
+        self.optimizer = optimizer
         self.tokenizer = tokenizer
         self.device = device
         self.dtype = dtype
+        self.world_size = world_size
+
+    def init_parallel(self):
+        model_parallel_size = self.world_size
+        if not torch.distributed.is_initialized():
+            torch.distributed.init_process_group("nccl")
+        if not model_parallel_is_initialized():
+            if model_parallel_size is None:
+                model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
+            initialize_model_parallel(model_parallel_size)
 
     def start(self):
         for batch in self.dataloader:
@@ -40,11 +60,22 @@ class AutoRegressiveTrainer:
                 input_list = []
                 label_list = []
                 for i in range(bs):
-                    if np.any(input_x[i] == self.tokenizer.pad_id):
+                    if not bool(input_x[i][end_index] == self.tokenizer.pad_id):
                         input_list.append(input_x[i])
-                        label_list.append(input_x[i])
+                        label_list.append(input_tensor[i][end_index])
 
-            output = self.model(batch)
-            loss = 0
-            for loss_m in self.loss_modules:
-                loss += loss_m(x, output)
+                input_x = torch.tensor(np.vstack(input_list), dtype=self.dtype).to(self.device)
+                input_y = torch.tensor(np.vstack(label_list), dtype=self.dtype).to(self.device)
+
+                output = self.model(input_x, start_index)
+                output = output[:, -1]
+                output_tid = torch.argmax(output, dim=-1)
+                loss = 0
+                for loss_m in self.loss_modules:
+                    loss += loss_m(output_tid, input_y)
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+
+                start_index = end_index
+
