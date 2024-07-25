@@ -68,6 +68,7 @@ class AutoRegressiveTrainer:
             for i in range(bs):
                 input_tensor[i, :b_lengths[i]] = batch[i]
 
+            loss = 0
             start_index = 0
             for end_index in range(start_pos_to_wait_predict, max_b_length - 1):
                 input_x = input_tensor[:, start_index: end_index]
@@ -85,22 +86,20 @@ class AutoRegressiveTrainer:
                 output = output[:, -1]
                 print(output.detach().cpu().numpy())
                 # output_tid = torch.argmax(output, dim=-1)
-                loss = 0
                 for loss_m in self.loss_modules:
-                    loss = loss + loss_m(output, input_y)
-                if not torch.isnan(loss):
-                    self.optimizer.zero_grad()
-                    if self.grad_clip is not None:
-                        torch.nn.utils.clip_grad_norm(
-                            self.model.parameters(),
-                            self.grad_clip
-                        )
-                    loss.backward(retain_graph=True)
-                    self.optimizer.step()
-                else:
-                    pass
-                    # print('nan ------------------')
+                    loss_item = loss_m(output, input_y)
+                    if not torch.isnan(loss_item):
+                        loss = loss + loss_item
 
                 start_index = end_index
 
                 print(loss.item())
+            self.optimizer.zero_grad()
+            if self.grad_clip is not None:
+                torch.nn.utils.clip_grad_norm(
+                    self.model.parameters(),
+                    self.grad_clip
+                )
+            loss.backward(retain_graph=True)
+            self.optimizer.step()
+
