@@ -79,10 +79,9 @@ class AutoRegressiveTrainer:
                 input_x = torch.tensor(np.vstack(input_list), dtype=self.dtype).to(self.device)
                 input_y = torch.tensor(label_list, dtype=self.dtype).to(self.device)
 
-                print(input_y)
-
                 output = self.model(input_x, start_index)
                 output = output[:, -1]
+                print(output.detach().numpy())
                 # output_tid = torch.argmax(output, dim=-1)
                 loss = 0
                 for loss_m in self.loss_modules:
