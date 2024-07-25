@@ -106,5 +106,5 @@ class AutoRegressiveTrainer:
                 )
             loss.backward(retain_graph=True)
             self.optimizer.step()
-            self.model.reset_kv_cache()
+            self.model.module.reset_kv_cache()
 
