@@ -55,7 +55,7 @@ if __name__ == '__main__':
     #     te_weight = {'tok_embeddings.weight': weights}
     model = Transformer(margs).cuda()
     # model.load_state_dict(weights)
-    model = DDP(model, retain_graph=True)
+    model = DDP(model, broadcast_buffers=False)
 
     # others
     optimizer = Adam(model.parameters(), lr=1e-5)
