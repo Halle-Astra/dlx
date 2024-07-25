@@ -18,7 +18,7 @@ from dlx.tokenizer.tiktoken import Tokenizer
 
 
 args = {
-    "dim": 4096,
+    "dim": 4,
     "n_layers": 3,
     "n_heads": 2,
     "n_kv_heads": 8,
@@ -53,12 +53,12 @@ if __name__ == '__main__':
     # weights = torch.load(ckpt_path, map_location="cpu")
     # if not isinstance(weights, dict):
     #     te_weight = {'tok_embeddings.weight': weights}
-    model = Transformer(margs)
+    model = Transformer(margs).cuda()
     # model.load_state_dict(weights)
     model = DDP(model)
 
     # others
-    optimizer = Adam()
+    optimizer = Adam(model.parameters())
     loss_func = CrossEntropyLoss()
     tokenizer = Tokenizer()
 

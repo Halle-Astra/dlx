@@ -72,7 +72,7 @@ class AutoRegressiveTrainer:
                 input_list = []
                 label_list = []
                 for i in range(bs):
-                    if not bool(input_x[i][end_index] == self.tokenizer.pad_id):
+                    if not bool(input_tensor[i][end_index] == self.tokenizer.pad_id):
                         input_list.append(input_x[i])
                         label_list.append(input_tensor[i][end_index])
 
