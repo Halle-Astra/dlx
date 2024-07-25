@@ -97,33 +97,33 @@ class Attention(nn.Module):
         self.n_rep = self.n_local_heads // self.n_local_kv_heads
         self.head_dim = args.dim // args.n_heads
 
-        self.wq = ColumnParallelLinear(
+        self.wq = nn.Linear(#ColumnParallelLinear(
             args.dim,
             args.n_heads * self.head_dim,
             bias=False,
-            gather_output=False,
-            init_method=torch.nn.init.kaiming_uniform_,
+            # gather_output=False,
+            # init_method=torch.nn.init.kaiming_uniform_,
         )
-        self.wk = ColumnParallelLinear(
+        self.wk = nn.Linear( #ColumnParallelLinear(
             args.dim,
             self.n_kv_heads * self.head_dim,
             bias=False,
-            gather_output=False,
-            init_method=torch.nn.init.kaiming_uniform_,
+            # gather_output=False,
+            # init_method=torch.nn.init.kaiming_uniform_,
         )
-        self.wv = ColumnParallelLinear(
+        self.wv = nn.Linear( #ColumnParallelLinear(
             args.dim,
             self.n_kv_heads * self.head_dim,
             bias=False,
-            gather_output=False,
-            init_method=torch.nn.init.kaiming_uniform_,
+            # gather_output=False,
+            # init_method=torch.nn.init.kaiming_uniform_,
         )
-        self.wo = RowParallelLinear(
+        self.wo = nn.Linear(#RowParallelLinear(
             args.n_heads * self.head_dim,
             args.dim,
             bias=False,
-            input_is_parallel=True,
-            init_method=torch.nn.init.kaiming_uniform_,
+            # input_is_parallel=True,
+            # init_method=torch.nn.init.kaiming_uniform_,
         )
 
         self.cache_k = torch.zeros(
