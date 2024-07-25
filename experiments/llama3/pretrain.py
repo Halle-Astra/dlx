@@ -32,7 +32,7 @@ margs = ModelArgs(**args)
 
 if __name__ == '__main__':
     # ddp setting
-    model_parallel_size = 2
+    model_parallel_size = 1
     if not torch.distributed.is_initialized():
         torch.distributed.init_process_group("nccl")
     if not model_parallel_is_initialized():
@@ -40,19 +40,21 @@ if __name__ == '__main__':
             model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
         initialize_model_parallel(model_parallel_size)
     torch.cuda.set_device(dist.get_rank())
+    print(f'当前的rank为{dist.get_rank()}')
+    print(f'当前的world_size为{dist.get_world_size()}')
 
 
     # dataloader
     wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'
-    train_dataloader = WuDao(wudao_root)
+    train_dataloader = WuDao(wudao_root, num_worker=1)
 
     # model
     ckpt_path = '/root/.cache/dlx/Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'
-    weights = torch.load(ckpt_path, map_location="cpu")
-    if not isinstance(weights, dict):
-        te_weight = {'tok_embeddings.weight': weights}
+    # weights = torch.load(ckpt_path, map_location="cpu")
+    # if not isinstance(weights, dict):
+    #     te_weight = {'tok_embeddings.weight': weights}
     model = Transformer(margs)
-    model.load_state_dict(weights)
+    # model.load_state_dict(weights)
     model = DDP(model)
 
     # others

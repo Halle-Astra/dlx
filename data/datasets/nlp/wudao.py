@@ -76,7 +76,8 @@ class WuDao:
                  change_file_iters=1000,
                  queue_size=2000,
                  batch_size=4,
-                 steps=250000):
+                 steps=250000,
+                 num_worker=8):
         self.files = glob.glob(os.path.join(root, '*.json'))
         self.debug = False
 
@@ -84,6 +85,7 @@ class WuDao:
         self.change_file_times = Value('i', 0)
         self.batch_size = batch_size
         self.steps = steps
+        self.num_worker = num_worker
         self.current_step = 0
 
         self.manager = Manager()
@@ -147,7 +149,7 @@ class WuDao:
             target=worker_func,
             args=(self.contents_num, self.content_list, self.data_queue, self.process_count, self.lock,
                   self.workers_exit_event, self.tokenizer)
-        ) for i in range(8)]
+        ) for i in range(self.num_worker)]
         for w in self.workers:
             w.start()
 
