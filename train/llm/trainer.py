@@ -19,7 +19,8 @@ class AutoRegressiveTrainer:
                  kv_cache_enabled=False,
                  device='cuda',
                  dtype=torch.float16,
-                 parallel=None):
+                 parallel=None,
+                 grad_clip=None):
         """
 
         :param model:
@@ -41,6 +42,7 @@ class AutoRegressiveTrainer:
         self.device = device
         self.dtype = dtype
         self.world_size = world_size
+        self.grad_clip = grad_clip
 
 
 
@@ -88,10 +90,16 @@ class AutoRegressiveTrainer:
                     loss += loss_m(output, input_y)
                 if not torch.isnan(loss):
                     self.optimizer.zero_grad()
+                    if self.grad_clip is not None:
+                        torch.nn.utils.clip_grad_norm(
+                            self.model.parameters(),
+                            self.grad_clip
+                        )
                     loss.backward(retain_graph=True)
                     self.optimizer.step()
                 else:
-                    print('nan ------------------')
+                    pass
+                    # print('nan ------------------')
 
                 start_index = end_index
 
