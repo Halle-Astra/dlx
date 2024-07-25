@@ -87,7 +87,7 @@ class AutoRegressiveTrainer:
                 # output_tid = torch.argmax(output, dim=-1)
                 loss = 0
                 for loss_m in self.loss_modules:
-                    loss += loss_m(output, input_y)
+                    loss = loss + loss_m(output, input_y)
                 if not torch.isnan(loss):
                     self.optimizer.zero_grad()
                     if self.grad_clip is not None:
