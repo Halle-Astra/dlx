@@ -16,6 +16,7 @@ from torch.nn import CrossEntropyLoss
 from argparse import ArgumentParser
 from dlx.tokenizer.tiktoken import Tokenizer
 
+torch.autograd.set_detect_anomaly(True)
 
 args = {
     "dim": 4,
