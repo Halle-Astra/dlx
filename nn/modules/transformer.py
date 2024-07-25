@@ -108,7 +108,7 @@ class TransformerDecoderUnit(nn.Module):
     def forward(self, embeddings, memory=None):
         Q, K, V = self.qkv_creator(embeddings)
         output = self.masked_multi_head_attention(Q, K, V)
-        output += embeddings
+        output = output + embeddings
         output = self.layer_norm(output)
         decoder_q = self.q_creator(output)
         memory_keys, memory_values = self.kv_creator(memory)
@@ -116,10 +116,10 @@ class TransformerDecoderUnit(nn.Module):
         # output from cross attention
         output_x_att = self.multi_head_attention(decoder_q, memory_keys, memory_values)
 
-        output += output_x_att
+        output = output + output_x_att
         output = self.layer_norm(output)
         output_ffn = self.ffn(output)
-        output += output_ffn
+        output = output + output_ffn
         output = self.layer_norm(output)
         return output
 
