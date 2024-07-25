@@ -83,10 +83,10 @@ class AutoRegressiveTrainer:
 
                 output = self.model(input_x, start_index)
                 output = output[:, -1]
-                output_tid = torch.argmax(output, dim=-1)
+                # output_tid = torch.argmax(output, dim=-1)
                 loss = 0
                 for loss_m in self.loss_modules:
-                    loss += loss_m(output_tid, input_y)
+                    loss += loss_m(output, input_y)
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
