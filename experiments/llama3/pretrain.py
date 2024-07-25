@@ -21,7 +21,7 @@ args = {
     "dim": 4,
     "n_layers": 3,
     "n_heads": 2,
-    "n_kv_heads": 8,
+    "n_kv_heads": 2,
     "vocab_size": 128256,
     "multiple_of": 1024,
     "ffn_dim_multiplier": 1.3,
