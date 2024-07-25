@@ -81,7 +81,7 @@ def repeat_kv(x: torch.Tensor, n_rep: int) -> torch.Tensor:
     if n_rep == 1:
         return x
     return (
-        x[:, :, :, None, :]
+        x[:, :, :, None, :].clone()
         .expand(bs, slen, n_kv_heads, n_rep, head_dim)
         .reshape(bs, slen, n_kv_heads * n_rep, head_dim)
     )
@@ -96,6 +96,7 @@ class Attention(nn.Module):
         self.n_local_kv_heads = self.n_kv_heads // model_parallel_size
         self.n_rep = self.n_local_heads // self.n_local_kv_heads
         self.head_dim = args.dim // args.n_heads
+        self.args = args
 
         self.wq = nn.Linear(#ColumnParallelLinear(
             args.dim,
@@ -143,6 +144,25 @@ class Attention(nn.Module):
             )
         ).cuda()
 
+    def reset_kv_cache(self):
+        self.cache_k = torch.zeros(
+            (
+                self.args.max_batch_size,
+                self.args.max_seq_len,
+                self.n_local_kv_heads,
+                self.head_dim,
+            )
+        ).cuda()
+        self.cache_v = torch.zeros(
+            (
+                self.args.max_batch_size,
+                self.args.max_seq_len,
+                self.n_local_kv_heads,
+                self.head_dim,
+            )
+        ).cuda()
+        print("成功reset")
+
     def forward(
         self,
         x: torch.Tensor,
@@ -165,8 +185,8 @@ class Attention(nn.Module):
         self.cache_k[:bsz, start_pos : start_pos + seqlen] = xk
         self.cache_v[:bsz, start_pos : start_pos + seqlen] = xv
 
-        keys = self.cache_k[:bsz, : start_pos + seqlen]
-        values = self.cache_v[:bsz, : start_pos + seqlen]
+        keys = self.cache_k[:bsz, : start_pos + seqlen].clone()
+        values = self.cache_v[:bsz, : start_pos + seqlen].clone()
 
         # repeat k/v heads if n_kv_heads < n_heads
         keys = repeat_kv(
@@ -300,3 +320,7 @@ class Transformer(nn.Module):
         h = self.norm(h)
         output = self.output(h).float()
         return output
+
+    def reset_kv_cache(self):
+        for layer in self.layers:
+            layer.attention.reset_kv_cache()
