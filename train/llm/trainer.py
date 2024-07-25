@@ -76,8 +76,8 @@ class AutoRegressiveTrainer:
                         input_list.append(input_x[i])
                         label_list.append(input_tensor[i][end_index])
 
-                input_x = torch.tensor(np.vstack(input_list), dtype=self.dtype).to(self.device)
-                input_y = torch.tensor(np.vstack(label_list), dtype=self.dtype).to(self.device)
+                input_x = torch.tensor(np.vstack(input_list), dtype=self.dtypeth).to(self.device)
+                input_y = torch.tensor(label_list, dtype=self.dtype).to(self.device)
 
                 print(input_x.shape)
 
