@@ -87,9 +87,12 @@ class AutoRegressiveTrainer:
                 loss = 0
                 for loss_m in self.loss_modules:
                     loss += loss_m(output, input_y)
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
+                if not torch.isnan(loss):
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step()
+                else:
+                    print('nan ------------------')
 
                 start_index = end_index
 
