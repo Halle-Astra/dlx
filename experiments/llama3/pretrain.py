@@ -58,7 +58,7 @@ if __name__ == '__main__':
     model = DDP(model)
 
     # others
-    optimizer = Adam(model.parameters())
+    optimizer = Adam(model.parameters(), lr=1e-5)
     loss_func = CrossEntropyLoss()
     tokenizer = Tokenizer()
 
