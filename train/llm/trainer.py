@@ -89,7 +89,7 @@ class AutoRegressiveTrainer:
                     loss += loss_m(output, input_y)
                 if not torch.isnan(loss):
                     self.optimizer.zero_grad()
-                    loss.backward()
+                    loss.backward(retain_graph=True)
                     self.optimizer.step()
                 else:
                     print('nan ------------------')
