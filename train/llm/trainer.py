@@ -79,7 +79,7 @@ class AutoRegressiveTrainer:
                 input_x = torch.tensor(np.vstack(input_list), dtype=self.dtype).to(self.device)
                 input_y = torch.tensor(label_list, dtype=self.dtype).to(self.device)
 
-                print(input_x.shape)
+                print(input_y)
 
                 output = self.model(input_x, start_index)
                 output = output[:, -1]
