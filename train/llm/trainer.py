@@ -70,7 +70,11 @@ class AutoRegressiveTrainer:
 
             loss = 0
             start_index = 0
+            t = 0
             for end_index in range(start_pos_to_wait_predict, max_b_length - 1):
+                t+=1
+                if t > 4:
+                    break
                 input_x = input_tensor[:, start_index: end_index]
                 input_list = []
                 label_list = []
