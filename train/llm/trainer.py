@@ -90,7 +90,7 @@ class AutoRegressiveTrainer:
             input_x = torch.tensor(input_ndarray, dtype=self.dtype).to(self.device)
             input_y = input_x[1:]
 
-            output = self.model(input_x, start_index, index_in_batch)
+            output = self.model(input_x, start_index)
             output = output[:, :-1]
             print(output.detach().cpu().numpy())
             # output_tid = torch.argmax(output, dim=-1)
