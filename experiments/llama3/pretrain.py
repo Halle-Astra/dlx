@@ -66,6 +66,6 @@ if __name__ == '__main__':
     trainer = AutoRegressiveTrainer(
         model, train_dataloader, loss_func, optimizer,
         2, tokenizer, True, dtype=torch.long, parallel='ddp',
-        grad_clip=0.1, device='cuda'
+        grad_clip=None, device='cuda'
     )
     trainer.start()
