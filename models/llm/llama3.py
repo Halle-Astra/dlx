@@ -81,7 +81,7 @@ def repeat_kv(x: torch.Tensor, n_rep: int) -> torch.Tensor:
     if n_rep == 1:
         return x
     return (
-        x[:, :, :, None, :].clone()
+        x[:, :, :, None, :]
         .expand(bs, slen, n_kv_heads, n_rep, head_dim)
         .reshape(bs, slen, n_kv_heads * n_rep, head_dim)
     )
@@ -191,8 +191,8 @@ class Attention(nn.Module):
         else:
             self.cache_k[index_in_batch, start_pos: start_pos + seqlen] = xk
             self.cache_v[index_in_batch, start_pos: start_pos + seqlen] = xv
-            keys = self.cache_k[index_in_batch, : start_pos + seqlen].clone()
-            values = self.cache_v[index_in_batch, : start_pos + seqlen].clone()
+            keys = self.cache_k[index_in_batch, : start_pos + seqlen]
+            values = self.cache_v[index_in_batch, : start_pos + seqlen]
 
         # repeat k/v heads if n_kv_heads < n_heads
         keys = repeat_kv(
