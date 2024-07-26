@@ -60,9 +60,10 @@ class AutoRegressiveTrainer:
             b_lengths = [len(i) for i in batch]
             min_b_length = min(b_lengths)
             max_b_length = max(b_lengths)
-            if max_b_length > 2048:
-                batch = [i[:2048] for i in batch]
-                max_b_length = 2048
+            test_max_length=200
+            if max_b_length > test_max_length:  # 2048:
+                batch = [i[:test_max_length] for i in batch]
+                max_b_length = test_max_length
             start_pos_to_wait_predict = random.randint(1, min_b_length - 1)  # 不能输入空字符串
 
             bs = len(batch)
@@ -88,18 +89,19 @@ class AutoRegressiveTrainer:
             #             index_in_batch.append(i)
 
             input_x = torch.tensor(input_ndarray, dtype=self.dtype).to(self.device)
-            input_y = input_x[1:]
+            input_y = input_x[:, 1:]
+            input_y = input_y.flatten()
 
             output = self.model(input_x, start_index)
             output = output[:, :-1]
-            print(output.detach().cpu().numpy())
+            bs, seq_length, vocab_size = output.shape 
+            output = output.reshape(-1, vocab_size)
             # output_tid = torch.argmax(output, dim=-1)
             for loss_m in self.loss_modules:
                 loss_item = loss_m(output, input_y)
                 if not torch.isnan(loss_item):
                     loss = loss + loss_item
 
-            start_index = end_index
 
             print(loss.item())
             self.optimizer.zero_grad()
