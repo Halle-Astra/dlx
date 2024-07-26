@@ -43,6 +43,7 @@ class AutoRegressiveTrainer:
         self.dtype = dtype
         self.world_size = world_size
         self.grad_clip = grad_clip
+        self.kv_cache_enabled = kv_cache_enabled
 
 
 
@@ -78,15 +79,17 @@ class AutoRegressiveTrainer:
                 input_x = input_tensor[:, start_index: end_index]
                 input_list = []
                 label_list = []
+                index_in_batch = []
                 for i in range(bs):
                     if not bool(input_tensor[i][end_index] == self.tokenizer.pad_id):
                         input_list.append(input_x[i])
                         label_list.append(input_tensor[i][end_index])
+                        index_in_batch.append(i)
 
                 input_x = torch.tensor(np.vstack(input_list), dtype=self.dtype).to(self.device)
                 input_y = torch.tensor(label_list, dtype=self.dtype).to(self.device)
 
-                output = self.model(input_x, start_index)
+                output = self.model(input_x, start_index, index_in_batch)
                 output = output[:, -1]
                 print(output.detach().cpu().numpy())
                 # output_tid = torch.argmax(output, dim=-1)

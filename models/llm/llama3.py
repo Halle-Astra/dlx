@@ -161,7 +161,7 @@ class Attention(nn.Module):
                 self.head_dim,
             )
         ).cuda()
-        print("成功reset")
+        # print("成功reset")
 
     def forward(
         self,
@@ -169,6 +169,7 @@ class Attention(nn.Module):
         start_pos: int,
         freqs_cis: torch.Tensor,
         mask: Optional[torch.Tensor],
+        index_in_batch = None
     ):
         bsz, seqlen, _ = x.shape
         xq, xk, xv = self.wq(x), self.wk(x), self.wv(x)
@@ -182,11 +183,17 @@ class Attention(nn.Module):
         self.cache_k = self.cache_k.to(xq)
         self.cache_v = self.cache_v.to(xq)
 
-        self.cache_k[:bsz, start_pos : start_pos + seqlen] = xk
-        self.cache_v[:bsz, start_pos : start_pos + seqlen] = xv
+        if index_in_batch is None:
+            self.cache_k[:bsz, start_pos : start_pos + seqlen] = xk
+            self.cache_v[:bsz, start_pos : start_pos + seqlen] = xv
+            keys = self.cache_k[:bsz, : start_pos + seqlen]
+            values = self.cache_v[:bsz, : start_pos + seqlen]
+        else:
+            self.cache_k[index_in_batch, start_pos : start_pos + seqlen] = xk
+            self.cache_v[index_in_batch, start_pos : start_pos + seqlen] = xv
+            keys = self.cache_k[index_in_batch, : start_pos + seqlen].clone()
+            values = self.cache_v[index_in_batch, : start_pos + seqlen].clone()
 
-        keys = self.cache_k[:bsz, : start_pos + seqlen].clone()
-        values = self.cache_v[:bsz, : start_pos + seqlen].clone()
 
         # repeat k/v heads if n_kv_heads < n_heads
         keys = repeat_kv(
@@ -262,8 +269,9 @@ class TransformerBlock(nn.Module):
         start_pos: int,
         freqs_cis: torch.Tensor,
         mask: Optional[torch.Tensor],
+        index_in_batch=None
     ):
-        h = x + self.attention(self.attention_norm(x), start_pos, freqs_cis, mask)
+        h = x + self.attention(self.attention_norm(x), start_pos, freqs_cis, mask, index_in_batch)
         out = h + self.feed_forward(self.ffn_norm(h))
         return out
 
@@ -295,7 +303,7 @@ class Transformer(nn.Module):
         )
 
     # @torch.inference_mode()
-    def forward(self, tokens: torch.Tensor, start_pos: int):
+    def forward(self, tokens: torch.Tensor, start_pos: int, index_in_batch=None):
         _bsz, seqlen = tokens.shape
         h = self.tok_embeddings(tokens)
         self.freqs_cis = self.freqs_cis.to(h.device)
@@ -316,7 +324,7 @@ class Transformer(nn.Module):
             ).type_as(h)
 
         for layer in self.layers:
-            h = layer(h, start_pos, freqs_cis, mask)
+            h = layer(h, start_pos, freqs_cis, mask, index_in_batch)
         h = self.norm(h)
         output = self.output(h).float()
         return output
