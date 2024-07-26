@@ -62,6 +62,7 @@ class AutoRegressiveTrainer:
             max_b_length = max(b_lengths)
             if max_b_length > 2048:
                 batch = [i[:2048] for i in batch]
+                max_b_length = 2048
             start_pos_to_wait_predict = random.randint(1, min_b_length - 1)  # 不能输入空字符串
 
             bs = len(batch)
