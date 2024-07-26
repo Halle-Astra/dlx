@@ -63,9 +63,9 @@ def reshape_for_broadcast(freqs_cis: torch.Tensor, x: torch.Tensor):
 
 
 def apply_rotary_emb(
-    xq: torch.Tensor,
-    xk: torch.Tensor,
-    freqs_cis: torch.Tensor,
+        xq: torch.Tensor,
+        xk: torch.Tensor,
+        freqs_cis: torch.Tensor,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     xq_ = torch.view_as_complex(xq.float().reshape(*xq.shape[:-1], -1, 2))
     xk_ = torch.view_as_complex(xk.float().reshape(*xk.shape[:-1], -1, 2))
@@ -98,28 +98,28 @@ class Attention(nn.Module):
         self.head_dim = args.dim // args.n_heads
         self.args = args
 
-        self.wq = nn.Linear(#ColumnParallelLinear(
+        self.wq = nn.Linear(  # ColumnParallelLinear(
             args.dim,
             args.n_heads * self.head_dim,
             bias=False,
             # gather_output=False,
             # init_method=torch.nn.init.kaiming_uniform_,
         )
-        self.wk = nn.Linear( #ColumnParallelLinear(
+        self.wk = nn.Linear(  # ColumnParallelLinear(
             args.dim,
             self.n_kv_heads * self.head_dim,
             bias=False,
             # gather_output=False,
             # init_method=torch.nn.init.kaiming_uniform_,
         )
-        self.wv = nn.Linear( #ColumnParallelLinear(
+        self.wv = nn.Linear(  # ColumnParallelLinear(
             args.dim,
             self.n_kv_heads * self.head_dim,
             bias=False,
             # gather_output=False,
             # init_method=torch.nn.init.kaiming_uniform_,
         )
-        self.wo = nn.Linear(#RowParallelLinear(
+        self.wo = nn.Linear(  # RowParallelLinear(
             args.n_heads * self.head_dim,
             args.dim,
             bias=False,
@@ -164,12 +164,12 @@ class Attention(nn.Module):
         # print("成功reset")
 
     def forward(
-        self,
-        x: torch.Tensor,
-        start_pos: int,
-        freqs_cis: torch.Tensor,
-        mask: Optional[torch.Tensor],
-        index_in_batch = None
+            self,
+            x: torch.Tensor,
+            start_pos: int,
+            freqs_cis: torch.Tensor,
+            mask: Optional[torch.Tensor],
+            index_in_batch=None
     ):
         bsz, seqlen, _ = x.shape
         xq, xk, xv = self.wq(x), self.wk(x), self.wv(x)
@@ -184,16 +184,15 @@ class Attention(nn.Module):
         self.cache_v = self.cache_v.to(xq)
 
         if index_in_batch is None:
-            self.cache_k[:bsz, start_pos : start_pos + seqlen] = xk
-            self.cache_v[:bsz, start_pos : start_pos + seqlen] = xv
+            self.cache_k[:bsz, start_pos: start_pos + seqlen] = xk
+            self.cache_v[:bsz, start_pos: start_pos + seqlen] = xv
             keys = self.cache_k[:bsz, : start_pos + seqlen]
             values = self.cache_v[:bsz, : start_pos + seqlen]
         else:
-            self.cache_k[index_in_batch, start_pos : start_pos + seqlen] = xk
-            self.cache_v[index_in_batch, start_pos : start_pos + seqlen] = xv
+            self.cache_k[index_in_batch, start_pos: start_pos + seqlen] = xk
+            self.cache_v[index_in_batch, start_pos: start_pos + seqlen] = xv
             keys = self.cache_k[index_in_batch, : start_pos + seqlen].clone()
             values = self.cache_v[index_in_batch, : start_pos + seqlen].clone()
-
 
         # repeat k/v heads if n_kv_heads < n_heads
         keys = repeat_kv(
@@ -219,11 +218,11 @@ class Attention(nn.Module):
 
 class FeedForward(nn.Module):
     def __init__(
-        self,
-        dim: int,
-        hidden_dim: int,
-        multiple_of: int,
-        ffn_dim_multiplier: Optional[float],
+            self,
+            dim: int,
+            hidden_dim: int,
+            multiple_of: int,
+            ffn_dim_multiplier: Optional[float],
     ):
         super().__init__()
         hidden_dim = int(2 * hidden_dim / 3)
@@ -264,12 +263,12 @@ class TransformerBlock(nn.Module):
         self.ffn_norm = RMSNorm(args.dim, eps=args.norm_eps)
 
     def forward(
-        self,
-        x: torch.Tensor,
-        start_pos: int,
-        freqs_cis: torch.Tensor,
-        mask: Optional[torch.Tensor],
-        index_in_batch=None
+            self,
+            x: torch.Tensor,
+            start_pos: int,
+            freqs_cis: torch.Tensor,
+            mask: Optional[torch.Tensor],
+            index_in_batch=None
     ):
         h = x + self.attention(self.attention_norm(x), start_pos, freqs_cis, mask, index_in_batch)
         out = h + self.feed_forward(self.ffn_norm(h))
@@ -307,7 +306,7 @@ class Transformer(nn.Module):
         _bsz, seqlen = tokens.shape
         h = self.tok_embeddings(tokens)
         self.freqs_cis = self.freqs_cis.to(h.device)
-        freqs_cis = self.freqs_cis[start_pos : start_pos + seqlen]
+        freqs_cis = self.freqs_cis[start_pos: start_pos + seqlen]
 
         mask = None
         if seqlen > 1:

@@ -16,7 +16,7 @@ class AutoRegressiveTrainer:
                  optimizer=None,
                  world_size=None,
                  tokenizer=None,
-                 kv_cache_enabled=False,
+                 model_is_kv_cache_enabled=False,
                  device='cuda',
                  dtype=torch.float16,
                  parallel=None,
@@ -43,9 +43,7 @@ class AutoRegressiveTrainer:
         self.dtype = dtype
         self.world_size = world_size
         self.grad_clip = grad_clip
-        self.kv_cache_enabled = kv_cache_enabled
-
-
+        self.model_is_kv_cache_enabled = model_is_kv_cache_enabled
 
     def init_parallel(self):
         torch.cuda.set_device(dist.get_rank())
@@ -73,8 +71,8 @@ class AutoRegressiveTrainer:
             start_index = 0
             t = 0
             for end_index in range(start_pos_to_wait_predict, max_b_length - 1):
-                t+=1
-                if end_index>400 or t > 30:
+                t += 1
+                if end_index > 400 or t > 30:
                     break
                 input_x = input_tensor[:, start_index: end_index]
                 input_list = []
@@ -102,13 +100,15 @@ class AutoRegressiveTrainer:
 
                 print(loss.item())
             self.optimizer.zero_grad()
-            if self.grad_clip is not None:
-                torch.nn.utils.clip_grad_norm(
-                    self.model.parameters(),
-                    self.grad_clip
-                )
-            if loss >0:
-                loss.backward(retain_graph=True)
-                self.optimizer.step()
-            self.model.module.reset_kv_cache()
 
+            if loss > 0:
+                loss.backward(retain_graph=True)
+                if self.grad_clip is not None:
+                    torch.nn.utils.clip_grad_norm(
+                        self.model.parameters(),
+                        self.grad_clip
+                    )
+                self.optimizer.step()
+
+            if self.model_is_kv_cache_enabled:
+                self.model.module.reset_kv_cache()
