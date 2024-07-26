@@ -88,7 +88,7 @@ class AutoRegressiveTrainer:
             #             index_in_batch.append(i)
 
             input_x = torch.tensor(input_ndarray, dtype=self.dtype).to(self.device)
-            input_y = input_x[1:]
+            input_y = input_x[:, 1:]
 
             output = self.model(input_x, start_index)
             output = output[:, :-1]
