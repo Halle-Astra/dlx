@@ -73,7 +73,7 @@ class AutoRegressiveTrainer:
             t = 0
             for end_index in range(start_pos_to_wait_predict, max_b_length - 1):
                 t+=1
-                if t > 4:
+                if end_index>400 or t > 30:
                     break
                 input_x = input_tensor[:, start_index: end_index]
                 input_list = []
@@ -104,7 +104,8 @@ class AutoRegressiveTrainer:
                     self.model.parameters(),
                     self.grad_clip
                 )
-            loss.backward(retain_graph=True)
-            self.optimizer.step()
+            if loss >0:
+                loss.backward(retain_graph=True)
+                self.optimizer.step()
             self.model.module.reset_kv_cache()
 

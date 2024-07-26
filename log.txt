@@ -1,0 +1,686 @@
+WARNING:torch.distributed.run:
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+> initializing model parallel with size 1
+> initializing ddp with size 2
+> initializing pipeline with size 1
+当前的rank为0
+当前的world_size为2
+当前的rank为1
+当前的world_size为2
+2024-07-25 20:27:37.453 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021023738.json is loaded.
+2024-07-25 20:27:37.891 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:27:38.073 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:27:39.572 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022991.json is loaded.
+2024-07-25 20:27:39.576 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:27:39.576 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:27:47.516 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021023667.json is loaded.
+2024-07-25 20:27:47.520 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:131 - 锁已释放
+2024-07-25 20:27:47.520 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - release unlocked lock
+2024-07-25 20:27:47.993 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:27:53.072 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021024703.json is loaded.
+2024-07-25 20:27:53.074 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:27:53.074 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:27:55.730 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:28:02.642 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:28:02.643 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:28:02.644 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:28:02.644 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:28:02.644 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:28:02.642 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021012703.json is loaded.
+2024-07-25 20:28:02.645 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:28:02.645 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:28:02.646 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:28:02.646 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:28:02.843 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:28:02.843 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022906.json is loaded.
+2024-07-25 20:28:02.846 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:28:02.846 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:28:05.476 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:28:06.323 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:28:15.783 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022618.json is loaded.
+2024-07-25 20:28:15.785 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:28:15.785 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:28:18.690 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021023049.json is loaded.
+2024-07-25 20:28:18.692 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:28:18.693 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:28:22.143 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:28:23.366 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:28:35.803 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:28:35.804 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:28:35.802 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021023688.json is loaded.
+2024-07-25 20:28:35.807 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:28:35.807 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:28:36.768 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:28:37.412 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022698.json is loaded.
+2024-07-25 20:28:37.416 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:28:37.418 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:28:38.567 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:28:56.564 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022029.json is loaded.
+2024-07-25 20:28:56.567 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:28:56.569 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:29:07.148 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:29:12.547 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-202101281a.json is loaded.
+2024-07-25 20:29:12.547 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:29:12.548 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:29:12.549 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:29:13.879 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021023008.json is loaded.
+2024-07-25 20:29:13.882 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:29:13.883 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:29:14.422 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:29:15.749 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:29:23.509 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021021707.json is loaded.
+2024-07-25 20:29:23.517 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:29:23.520 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:29:32.013 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:29:38.602 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022859.json is loaded.
+2024-07-25 20:29:38.605 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:29:38.605 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:29:44.473 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:29:49.413 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021023123.json is loaded.
+2024-07-25 20:29:49.418 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:29:49.419 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:29:55.308 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021012613.json is loaded.
+2024-07-25 20:29:55.312 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:131 - 锁已释放
+2024-07-25 20:29:55.313 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - release unlocked lock
+2024-07-25 20:29:58.641 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:29:58.876 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+[[-0.72907424  0.9920977   2.704471   ... -1.2662526  -0.00452649
+   0.766103  ]
+ [-0.92917496  0.6616516   2.574538   ... -1.2976384   0.09416656
+   1.0182201 ]
+ [ 0.8149978   0.1784966  -0.5740502  ... -0.5075291  -2.0099413
+  -2.0178413 ]
+ [ 1.3004825   1.9141957   0.2958017  ... -0.33006164 -0.9809271
+  -1.7490696 ]]
+12.9901123046875
+[[-1.2427459  -0.6658346   1.0137216  ...  0.64899737  2.0455773
+   2.3542378 ]
+ [-1.03271     0.07486242  1.6086689  ... -1.3460242   0.30758995
+   1.3116244 ]
+ [ 0.71931815  1.7853994   1.6023318  ... -0.23448917 -0.78222865
+  -1.191438  ]
+ [-0.83621144 -1.0069779  -0.4790361  ...  0.83323216  1.9515951
+   1.9675694 ]]
+14.227550506591797
+[[ 0.7217707  -0.5338606  -2.1819494  ... -0.9970678  -1.7731745
+  -1.5948597 ]
+ [ 0.882627    1.1363505   0.74610686 ...  0.25101912 -1.1337659
+  -1.6528939 ]
+ [ 0.8695932   1.2870809   0.9240351  ...  0.22167407 -1.0283704
+  -1.5662464 ]
+ [-0.83848697 -1.0126269  -0.48129445 ...  0.8322861   1.9494168
+   1.9681871 ]]
+27.94702911376953
+2024-07-25 20:30:16.647 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021023102.json is loaded.
+2024-07-25 20:30:16.653 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:30:16.653 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+[[ 0.9431111   1.472805    0.85482943 ...  0.38358855 -0.67390686
+  -1.4010901 ]
+ [-0.44291377  1.1531032   2.3942382  ... -1.5410691  -0.49302253
+   0.24127886]
+ [-0.38463482  1.2874849   2.5794632  ... -1.4022465  -0.49024653
+   0.15694809]
+ [ 0.8654797   0.845634    0.46101972 ...  0.32154062 -1.2576565
+  -1.7320127 ]]
+26.936256408691406
+2024-07-25 20:30:16.729 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021021333.json is loaded.
+2024-07-25 20:30:16.731 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:30:16.731 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+[[ 0.64931303 -0.8908255  -2.4539676  ... -0.53234994 -1.5015401
+  -1.4238298 ]
+ [-1.155147    0.6152055   3.2392612  ... -0.0781657   1.104273
+   1.6562456 ]
+ [ 0.8573421  -0.10800398 -1.1598102  ...  1.4742988  -0.20429209
+  -1.135285  ]
+ [ 0.00597747 -1.2859753  -2.5654497  ... -0.53947604 -0.15943483
+   0.1014619 ]]
+39.92485046386719
+2024-07-25 20:30:20.414 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+[[-0.49135226  1.2807335   2.903221   ... -1.1452223  -0.29112548
+   0.32328144]
+ [-0.39221254  1.1040021   2.2604945  ... -1.6395878  -0.68759406
+   0.08344162]
+ [ 0.31328768 -0.565047   -1.6020072  ... -1.4260377  -1.6096795
+  -1.0652915 ]
+ [-0.38976014 -1.5579513  -2.0561087  ... -0.308767    0.19518332
+   0.6216913 ]]
+52.91667175292969
+[[-1.0086699  -0.98451144 -0.24306382 ...  0.07920903  1.5663927
+   1.9826335 ]
+ [-1.0536122  -0.46497053  0.626865   ... -0.96977484  0.768021
+   1.6257498 ]
+ [ 0.10588218  1.2682183   1.4413105  ... -1.8886471  -1.2401463
+  -0.6502003 ]
+ [ 0.8867814   1.9158944   0.5828344  ... -1.6273322  -1.2234895
+  -1.313452  ]]
+65.20046997070312
+[[-0.6102517  -1.0152714  -1.1851054  ...  0.35333976  1.5691427
+   1.6310588 ]
+ [-1.2044202  -0.12229332  1.7821311  ...  0.4554578   1.9423695
+   2.2559626 ]
+ [ 0.6976324   1.7834073   1.6454008  ... -0.23760907 -0.7694157
+  -1.1650244 ]
+ [-0.5377784   1.3068995   2.7659094  ... -0.3367182   0.8031628
+   0.99345434]]
+77.78839874267578
+2024-07-25 20:30:24.999 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021023395.json is loaded.
+2024-07-25 20:30:25.005 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:30:25.005 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+[[-0.47246116  1.3151217   2.895224   ... -1.1202537  -0.25168446
+   0.3311936 ]
+ [-1.6404951  -0.54879534  3.4318018  ...  0.31836027  0.5335296
+   1.5544631 ]
+ [ 0.8998646   1.2222728   0.79129    ...  0.22553179 -1.0960586
+  -1.6362997 ]
+ [-1.2440991   0.0987362   2.2142715  ... -0.9844854   0.67525506
+   1.6546261 ]]
+39.49884796142578
+2024-07-25 20:30:30.472 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+[[-1.2792577  -0.22032899  2.3631005  ...  1.1198046   1.9651009
+   2.169009  ]
+ [-1.0360327  -0.5880373   0.624702   ... -1.2788391   0.19435847
+   1.2586647 ]
+ [-1.055235    0.77940136  3.4969032  ... -0.42196107  0.5081863
+   1.2002326 ]
+ [-0.10918685  1.5766286   2.5315921  ... -1.2303413  -0.57420194
+  -0.1702572 ]]
+53.28827667236328
+[[-0.36226648 -1.5068748  -2.0952241  ... -0.3274164   0.23363549
+   0.63228893]
+ [ 0.6944256   0.49774334  0.22207364 ...  1.3239396  -0.20215434
+  -1.0227121 ]
+ [-0.30173737 -1.4954157  -1.9057735  ... -0.6435869  -0.43229276
+   0.15533566]
+ [ 0.04154746  0.45189142  1.7275946  ...  1.2272962  -0.02113843
+  -0.38502648]]
+89.59857177734375
+[[ 1.25198     1.8487056   0.38975784 ... -0.16817743 -0.90937835
+  -1.6947031 ]
+ [-0.42792407 -1.5647542  -2.0016203  ... -0.28299743  0.26384234
+   0.6960225 ]
+ [ 0.13041525  1.5913042   1.8806397  ... -1.613091   -0.9250802
+  -0.51826125]
+ [-0.74908024 -1.5201677  -1.3976446  ... -0.00637393  0.93193626
+   1.3685495 ]]
+66.000732421875
+2024-07-25 20:30:31.287 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+[[ 0.07561188  1.1137469   1.2773612  ... -1.9516395  -1.3204358
+  -0.6630287 ]
+ [-0.59387356 -1.4045058  -1.649363   ... -0.00532839  0.952021
+   1.2632387 ]
+ [-0.3230545  -0.9525537  -1.8194146  ... -0.13991971  1.0425603
+   1.1378525 ]
+ [ 0.5653748  -0.82250726 -1.7584857  ... -0.2842347  -1.6453676
+  -1.5404664 ]]
+79.22318267822266
+[[ 0.8965082   1.4451785   0.98852515 ...  0.21947305 -0.88224053
+  -1.4844677 ]
+ [-1.2095721  -0.6972981   0.6504245  ... -0.17926037  1.5128901
+   2.1300716 ]
+ [-1.0813658  -0.49631247  0.6491253  ... -0.9238729   0.8118393
+   1.6702672 ]
+ [-1.0150169   0.7260686   3.6657667  ... -0.08078959  0.4140796
+   1.0178145 ]]
+91.56464385986328
+[[-1.1390263  -0.04936805  1.6546748  ... -1.1975882   0.48512813
+   1.4967241 ]
+ [ 0.42711282 -0.11766146 -0.7287352  ... -1.3999388  -2.0399961
+  -1.5169151 ]
+ [ 0.8931582   0.05811556 -1.6869382  ... -1.3687426  -2.059042
+  -1.8885475 ]
+ [ 0.9489604   0.5004615  -0.24809295 ...  0.02177097 -1.6739247
+  -2.011971  ]]
+104.06293487548828
+[[-0.4361868  -1.5616617  -1.9896405  ... -0.27645263  0.28811848
+   0.71876705]
+ [-0.7945447   0.76197577  2.8988976  ... -1.2996114  -0.48653606
+   0.46841908]
+ [ 1.2202115   1.8502547   0.4726128  ... -0.16633826 -0.89781004
+  -1.6634606 ]
+ [-1.165381   -0.22462557  2.3961134  ... -1.2188439  -0.6015083
+   0.6996272 ]]
+102.19232177734375
+[[-0.9052928   0.1660722   1.4489157  ... -1.4909594   0.13010308
+   1.112866  ]
+ [-1.6231612  -0.4659363   3.488454   ...  0.26965368  0.53094923
+   1.5460696 ]
+ [-1.0379192  -0.8172132   1.6462107  ...  1.9162332   1.6087365
+   1.566229  ]
+ [-0.95086     0.86804014  2.9681792  ... -0.68485594  0.6920266
+   1.3250782 ]]
+116.2509994506836
+[[-0.4726212   1.3151491   2.8950958  ... -1.1201493  -0.25090134
+   0.3318823 ]
+ [-1.1713189  -0.32317334  1.9720417  ...  1.3312114   2.0618172
+   2.1201456 ]
+ [ 0.72371525 -0.7974351  -2.8808239  ... -0.768766   -1.3035277
+  -1.2734134 ]
+ [-0.8965452   0.8183391   2.7987847  ... -1.1528357   0.18123105
+   1.0139956 ]]
+129.31544494628906
+[[ 0.9075937   1.2994515   0.8506357  ...  0.13079615 -1.1256067
+  -1.6465771 ]
+ [ 1.3620839   1.936655    0.10843439 ... -0.26990613 -0.86628115
+  -1.7221555 ]
+ [ 0.54839915  0.97869134  0.14178443 ... -1.9932595  -1.8266009
+  -1.3726797 ]
+ [ 0.7881563   2.106013    0.96002805 ... -0.71271294 -0.1214821
+  -0.6380675 ]]
+141.60589599609375
+2024-07-25 20:30:34.844 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021016853.json is loaded.
+2024-07-25 20:30:34.846 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:30:34.846 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:30:37.916 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+[[-0.6044852  -0.380706    2.0850217  ...  1.2549565   0.01204104
+   0.16058412]
+ [ 0.67163825 -0.56366533 -1.726394   ... -0.65107185 -1.8542645
+  -1.7049807 ]
+ [-0.07292765  1.5592475   2.3861563  ... -1.3609474  -0.6807245
+  -0.24439007]
+ [ 0.18099698 -0.7842134  -2.6308455  ... -0.5568392   0.3151659
+   0.30722192]]
+114.23828125
+[[ 0.5230881  -0.9180447  -2.000232   ... -0.4565342  -1.5923017
+  -1.4192989 ]
+ [ 0.7762675  -0.75496787 -3.211407   ... -0.7226238  -0.9787076
+  -1.0765857 ]
+ [-1.2481909  -0.9071144   0.4768397  ... -0.36218488  1.2518625
+   2.0184438 ]
+ [ 1.4209399   2.074535   -0.15719931 ... -0.5484756  -0.7515088
+  -1.6171554 ]]
+126.76039123535156
+2024-07-25 20:30:42.395 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:30:42.395 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-202101281b.json is loaded.
+2024-07-25 20:30:42.396 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:30:42.397 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:30:42.397 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:30:42.397 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:30:42.397 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+2024-07-25 20:30:42.398 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - list index out of range
+[[ 0.29445022  1.171046    0.65621096 ... -2.068106   -1.3114586
+  -0.78926015]
+ [ 1.4508097   1.9217333  -0.12296548 ... -0.48143774 -1.1104721
+  -1.9198588 ]
+ [-1.1927371  -0.55513287  1.5086714  ...  1.2993543   2.1637816
+   2.2387278 ]
+ [ 0.1829096  -1.2013541  -2.8408694  ... -0.47149283 -0.17733315
+  -0.06311116]]
+152.66366577148438
+2024-07-25 20:30:45.676 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022591.json is loaded.
+2024-07-25 20:30:45.681 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:30:45.682 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+[[-1.3129328  -0.7732182   0.8384049  ... -0.31864715  1.3505182
+   2.1203067 ]
+ [-0.02083288 -0.497705   -0.57991165 ...  1.9852817   1.5937772
+   0.7800434 ]
+ [ 0.12388287 -0.76653457 -2.5196     ... -0.51266944  0.44371718
+   0.43484095]
+ [ 0.6045984  -0.74538875 -2.2297387  ... -0.86532795 -1.6414515
+  -1.4265716 ]]
+139.37713623046875
+2024-07-25 20:31:07.217 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+[[-0.10661747  1.3758885   2.1176262  ... -1.6284698  -0.8808056
+  -0.29363272]
+ [-0.6224574  -0.7096179   0.30549034 ...  1.8996466   1.9905928
+   1.5557549 ]
+ [ 0.74357426 -0.7761417  -2.875507   ... -0.7707837  -1.3317301
+  -1.3104485 ]
+ [-0.39784968 -1.2112851  -1.9026159  ... -0.03560321  0.96709216
+   1.1267676 ]]
+165.1605224609375
+[[-0.96505356 -1.0802207  -0.2735173  ...  0.7928462   1.9454721
+   2.0712795 ]
+ [ 0.94903     1.5191252   0.8728802  ...  0.3593766  -0.64599484
+  -1.3812768 ]
+ [-0.5435594  -1.7563975  -1.9220344  ...  0.13187797  0.55194825
+   0.91123986]
+ [-0.56303537 -0.455438    0.15135841 ...  1.546859    2.1343787
+   1.6926408 ]]
+179.01168823242188
+[[-0.10822207  1.1881117   1.7756578  ... -1.8204253  -1.037362
+  -0.35113484]
+ [-0.0438541  -1.1891922  -0.58013606 ...  1.623222    0.00870655
+  -0.27953935]
+ [-1.1204433  -0.84138775  0.23010774 ... -0.5772195   1.0550518
+   1.8239402 ]
+ [-0.6075086  -0.59371716 -0.27273762 ...  1.1593072   2.1127799
+   1.8148291 ]]
+153.03546142578125
+2024-07-25 20:31:09.474 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+[[-0.09805997  1.1933045   1.7647997  ... -1.8223939  -1.0486517
+  -0.36702526]
+ [-0.60605997  0.05858635  0.49543965 ... -1.6791698  -0.12500368
+   0.75575715]
+ [ 0.8998269   0.7374446  -0.7373348  ... -1.7015837  -2.1337252
+  -1.9172509 ]
+ [-0.78453934  0.8610429   3.049067   ... -1.1800048  -0.38192856
+   0.50447285]]
+165.47010803222656
+2024-07-25 20:31:14.269 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021019930.json is loaded.
+2024-07-25 20:31:14.273 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:31:14.273 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:31:16.660 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022349.json is loaded.
+2024-07-25 20:31:16.665 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:31:16.666 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+[[ 0.59015304 -0.75846916 -2.2408893  ... -0.8795034  -1.6228751
+  -1.3973972 ]
+ [-1.0227286   0.11174121  1.6575005  ... -1.3640769   0.27691838
+   1.2826847 ]
+ [-0.03531716  1.2678131   1.7996691  ... -1.7837383  -1.101958
+  -0.468304  ]
+ [-1.2977164  -0.6067667   1.3174707  ...  0.73215765  2.0715327
+   2.3888144 ]]
+178.0312042236328
+[[-0.39920536  1.262157    2.6037822  ... -1.4024112  -0.5205708
+   0.1460737 ]
+ [ 1.0677958   0.06179215 -1.4493092  ...  1.292063   -0.3797009
+  -1.388821  ]
+ [-0.3835741   1.28653     2.5726893  ... -1.4069561  -0.49227673
+   0.15586722]
+ [ 1.2103323   1.993397    0.5426202  ... -0.5057846  -0.9861518
+  -1.6499811 ]]
+190.30426025390625
+2024-07-25 20:31:28.247 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+[[-0.424663   -1.559906   -2.0058222  ... -0.28645432  0.26445714
+   0.69464856]
+ [-1.133751   -0.31389618  1.2041337  ... -1.1888572   0.46634987
+   1.495603  ]
+ [-0.30658033 -1.1705772  -1.3690456  ...  1.61271     1.7089398
+   1.2166178 ]
+ [ 1.2042683   2.029633    0.5490244  ... -0.5095955  -0.90887517
+  -1.5879709 ]]
+189.38990783691406
+[[ 0.14175726 -0.7967031  -2.571295   ... -0.55290884  0.35044873
+   0.36256465]
+ [-0.99019796  0.7889098   2.9069715  ... -0.8092102   0.6137717
+   1.3301594 ]
+ [ 0.8422722  -0.11493552 -1.13434    ...  1.4892274  -0.18520923
+  -1.1129724 ]
+ [ 0.4198444  -1.1665415  -3.0302587  ... -0.46531135 -0.6268274
+  -0.58329463]]
+202.34288024902344
+2024-07-25 20:31:32.909 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+[[ 0.5678839  -0.62457275 -3.1089573  ... -0.6985023  -0.17822136
+  -0.32715467]
+ [-1.2743227   0.03434991  2.5864358  ...  0.7429521   1.8411031
+   2.145616  ]
+ [-1.0676986  -0.51283324  0.58771735 ... -0.92524487  0.8043243
+   1.656178  ]
+ [-0.1746982  -1.0154697  -2.1823518  ... -0.2686728   0.74434364
+   0.83849645]]
+202.32334899902344
+2024-07-25 20:31:36.242 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022340.json is loaded.
+2024-07-25 20:31:36.248 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:131 - 锁已释放
+2024-07-25 20:31:36.248 | ERROR    | dlx.data.datasets.nlp.wudao:worker_func:37 - release unlocked lock
+2024-07-25 20:31:39.726 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022612.json is loaded.
+2024-07-25 20:31:39.728 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:31:39.729 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+[[ 4.8466018e-01 -6.2513405e-01 -2.9998593e+00 ... -6.5542483e-01
+  -2.7605866e-03 -1.4307456e-01]
+ [ 4.4346535e-01 -5.7980996e-01 -1.0237193e+00 ... -5.5198181e-01
+  -1.8615226e+00 -1.5693598e+00]
+ [-1.2001852e+00 -6.3698244e-01  1.3118197e+00 ...  1.2297549e+00
+   2.1818209e+00  2.2812636e+00]
+ [-1.2816881e+00  4.2538688e-01  3.4102080e+00 ...  1.3241734e-01
+   1.1395019e+00  1.7359881e+00]]
+215.51217651367188
+[[ 0.99201286  1.5982571   0.8351983  ...  0.27562988 -0.66369545
+  -1.4107889 ]
+ [ 0.8777737   1.1190856   0.7402186  ...  0.24773084 -1.1483742
+  -1.6585271 ]
+ [-1.1638741  -1.586408   -0.3793424  ...  0.7207221   1.6404675
+   2.035522  ]
+ [ 0.83544946  0.8672319   0.5600679  ...  0.23343666 -1.3144525
+  -1.7335523 ]]
+215.29861450195312
+2024-07-25 20:31:57.358 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:31:58.398 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+[[-1.7817476  -1.3852357   1.6001476  ...  0.21998377  1.2900087
+   2.3226423 ]
+ [-1.012985   -1.409952   -0.56231356 ...  0.75675195  1.7469542
+   1.9865074 ]
+ [ 1.4179926   1.9723095  -0.02910741 ... -0.6057803  -1.1313252
+  -1.8848742 ]][[ 0.50424397  1.87962     2.0027459  ... -0.42894772 -0.5600818
+  -0.8240461 ]
+ [ 1.2397873   2.1055665   0.39269826 ... -0.75242805 -0.92724913
+  -1.5727303 ]
+ [-1.1343116  -0.28026512  2.0077581  ...  1.3779467   2.0339959
+   2.0572984 ]
+ [-1.315098    0.07967436  2.8034058  ...  0.6555859   1.733986
+   2.1112895 ]]
+226.85342407226562
+
+229.14187622070312
+[[-1.1796021  -0.97628874  0.3085814  ...  0.48607397  1.8809096
+   2.2454739 ]
+ [ 0.6354646   1.924856    1.4977903  ... -1.259369   -1.0948092
+  -1.1256063 ]
+ [ 0.89442384  1.166093    0.74856526 ...  0.23453109 -1.1313177
+  -1.6575886 ]]
+241.9998779296875
+2024-07-25 20:32:01.911 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021018495.json is loaded.
+2024-07-25 20:32:01.914 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:32:01.915 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+2024-07-25 20:32:04.835 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:32:05.133 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022463.json is loaded.
+2024-07-25 20:32:05.139 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:32:05.140 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+[[-1.5998318  -1.186137    1.4131676  ...  0.8692187   1.9179913
+   2.4970975 ]
+ [-0.9173518   0.79158384  2.812562   ... -1.1469704   0.18454751
+   1.0320494 ]
+ [-0.8931682  -0.79702294  0.3948161  ...  1.4934751   2.182054
+   2.0057535 ]
+ [ 0.41618484 -1.3196368  -2.676637   ... -0.12074886 -0.9758453
+  -0.9233039 ]]
+240.1705322265625
+[[-1.0170375  -1.1524844   1.5545971  ...  1.7733308   0.87225825
+   1.0458229 ]
+ [-0.06337656  1.6522027   2.7556727  ... -0.2695257   0.07534353
+   0.05035083]
+ [-1.2102636  -0.71753836  0.62091446 ... -0.2249762   1.46631
+   2.1076808 ]
+ [-0.9338304  -0.9444235   0.2603227  ...  1.4770314   2.1581624
+   2.031606  ]]
+253.32730102539062
+[[-0.9661288  -1.0854596  -0.25056195 ...  0.8545101   1.9708552
+   2.0765553 ]
+ [-1.2722373  -1.3697902   0.06870867 ...  0.5124434   1.7026182
+   2.1975796 ]
+ [ 0.5109852  -0.97441196 -3.0837443  ... -0.6525448  -0.65584743
+  -0.6387038 ]]
+254.50247192382812
+Process Process-12:
+WARNING:torch.distributed.elastic.agent.server.api:Received 2 death signal, shutting down workers
+WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 6360 closing signal SIGINT
+WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 6361 closing signal SIGINT
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.8/multiprocessing/process.py", line 318, in _bootstrap
+    util._exit_function()
+  File "/opt/conda/lib/python3.8/multiprocessing/util.py", line 360, in _exit_function
+    _run_finalizers()
+  File "/opt/conda/lib/python3.8/multiprocessing/util.py", line 300, in _run_finalizers
+    finalizer()
+  File "/opt/conda/lib/python3.8/multiprocessing/util.py", line 224, in __call__
+    res = self._callback(*self._args, **self._kwargs)
+  File "/opt/conda/lib/python3.8/multiprocessing/queues.py", line 195, in _finalize_join
+    thread.join()
+  File "/opt/conda/lib/python3.8/threading.py", line 1011, in join
+    self._wait_for_tstate_lock()
+  File "/opt/conda/lib/python3.8/threading.py", line 1027, in _wait_for_tstate_lock
+    elif lock.acquire(block, timeout):
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/parallel/distributed.py", line 888, in forward
+    output = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/workspace/GLM/dlx/models/llm/llama3.py", line 319, in forward
+    h = layer(h, start_pos, freqs_cis, mask)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/workspace/GLM/dlx/models/llm/llama3.py", line 266, in forward
+    h = x + self.attention(self.attention_norm(x), start_pos, freqs_cis, mask)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    2024-07-25 20:32:10.946 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+return forward_call(*input, **kwargs)
+  File "/workspace/GLM/dlx/models/llm/llama3.py", line 180, in forward
+    xq, xk = apply_rotary_emb(xq, xk, freqs_cis=freqs_cis)
+  File "/workspace/GLM/dlx/models/llm/llama3.py", line 74, in apply_rotary_emb
+    xk_out = torch.view_as_real(xk_ * freqs_cis).flatten(3)
+  File "/opt/conda/lib/python3.8/traceback.py", line 197, in format_stack
+    return format_list(extract_stack(f, limit=limit))
+  File "/opt/conda/lib/python3.8/traceback.py", line 211, in extract_stack
+    stack = StackSummary.extract(walk_stack(f), limit=limit)
+  File "/opt/conda/lib/python3.8/traceback.py", line 362, in extract
+    linecache.checkcache(filename)
+  File "/opt/conda/lib/python3.8/linecache.py", line 74, in checkcache
+    stat = os.stat(fullname)
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "experiments/llama3/pretrain.py", line 71, in <module>
+    trainer.start()
+  File "/workspace/GLM/dlx/train/llm/trainer.py", line 85, in start
+    output = self.model(input_x, start_index)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/parallel/distributed.py", line 888, in forward
+    output = self.module(*inputs, **kwargs)
+KeyboardInterrupt
+2024-07-25 20:32:11.370 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021022032.json is loaded.
+Traceback (most recent call last):
+2024-07-25 20:32:11.379 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+  File "experiments/llama3/pretrain.py", line 71, in <module>
+2024-07-25 20:32:11.381 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+    trainer.start()
+  File "/workspace/GLM/dlx/train/llm/trainer.py", line 85, in start
+    output = self.model(input_x, start_index)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/parallel/distributed.py", line 888, in forward
+    output = self.module(*inputs, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/workspace/GLM/dlx/models/llm/llama3.py", line 319, in forward
+    h = layer(h, start_pos, freqs_cis, mask)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/workspace/GLM/dlx/models/llm/llama3.py", line 266, in forward
+    h = x + self.attention(self.attention_norm(x), start_pos, freqs_cis, mask)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/workspace/GLM/dlx/models/llm/llama3.py", line 210, in forward
+    return self.wo(output)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/modules/linear.py", line 103, in forward
+    return F.linear(input, self.weight, self.bias)
+  File "/opt/conda/lib/python3.8/site-packages/torch/nn/functional.py", line 1848, in linear
+    return torch._C._nn.linear(input, weight, bias)
+  File "/opt/conda/lib/python3.8/traceback.py", line 197, in format_stack
+    return format_list(extract_stack(f, limit=limit))
+  File "/opt/conda/lib/python3.8/traceback.py", line 211, in extract_stack
+    stack = StackSummary.extract(walk_stack(f), limit=limit)
+  File "/opt/conda/lib/python3.8/traceback.py", line 362, in extract
+    linecache.checkcache(filename)
+  File "/opt/conda/lib/python3.8/linecache.py", line 74, in checkcache
+    stat = os.stat(fullname)
+KeyboardInterrupt
+Process Process-18:
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.8/multiprocessing/process.py", line 315, in _bootstrap
+    self.run()
+  File "/opt/conda/lib/python3.8/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/workspace/GLM/dlx/data/datasets/nlp/wudao.py", line 35, in worker_func
+    lock.release()
+  File "/opt/conda/lib/python3.8/multiprocessing/managers.py", line 1067, in release
+    return self._callmethod('release')
+  File "/opt/conda/lib/python3.8/multiprocessing/managers.py", line 835, in _callmethod
+    kind, result = conn.recv()
+  File "/opt/conda/lib/python3.8/multiprocessing/connection.py", line 250, in recv
+    buf = self._recv_bytes()
+  File "/opt/conda/lib/python3.8/multiprocessing/connection.py", line 414, in _recv_bytes
+    buf = self._recv(4)
+  File "/opt/conda/lib/python3.8/multiprocessing/connection.py", line 379, in _recv
+    chunk = read(handle, remaining)
+KeyboardInterrupt
+2024-07-25 20:32:11.961 | INFO     | dlx.data.datasets.nlp.wudao:arrange_workers:144 - 所有进程已成功退出
+2024-07-25 20:32:14.352 | DEBUG    | dlx.data.datasets.nlp.wudao:rload_file:166 - Source file /dataset/fd5061f6/chinese_data/WuDao/part-2021013704.json is loaded.
+2024-07-25 20:32:14.356 | WARNING  | dlx.data.datasets.nlp.wudao:arrange_workers:133 - 锁无法释放或早已释放
+2024-07-25 20:32:14.356 | ERROR    | dlx.data.datasets.nlp.wudao:arrange_workers:134 - release unlocked lock
+Exception ignored in: Process Process-13:
+<module 'threading' from '/opt/conda/lib/python3.8/threading.py'>WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 6360 closing signal SIGTERM
+
+WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 6361 closing signal SIGTERM
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.8/multiprocessing/process.py", line 318, in _bootstrap
+    util._exit_function()
+  File "/opt/conda/lib/python3.8/multiprocessing/util.py", line 360, in _exit_function
+    _run_finalizers()
+  File "/opt/conda/lib/python3.8/multiprocessing/util.py", line 300, in _run_finalizers
+    finalizer()
+  File "/opt/conda/lib/python3.8/multiprocessing/util.py", line 224, in __call__
+    res = self._callback(*self._args, **self._kwargs)
+  File "/opt/conda/lib/python3.8/multiprocessing/queues.py", line 195, in _finalize_join
+    thread.join()
+  File "/opt/conda/lib/python3.8/threading.py", line 1011, in join
+    self._wait_for_tstate_lock()
+  File "/opt/conda/lib/python3.8/threading.py", line 1027, in _wait_for_tstate_lock
+    elif lock.acquire(block, timeout):
+KeyboardInterrupt
+ERROR:torch.distributed.elastic.multiprocessing.errors.error_handler:{
+  "message": {
+    "message": "SignalException: Process 6333 got signal: 2",
+    "extraInfo": {
+      "py_callstack": "Traceback (most recent call last):\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py\", line 709, in run\n    result = self._invoke_run(role)\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py\", line 843, in _invoke_run\n    time.sleep(monitor_interval)\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/api.py\", line 60, in _terminate_process_handler\n    raise SignalException(f\"Process {os.getpid()} got signal: {sigval}\", sigval=sigval)\ntorch.distributed.elastic.multiprocessing.api.SignalException: Process 6333 got signal: 2\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py\", line 345, in wrapper\n    return f(*args, **kwargs)\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/run.py\", line 719, in main\n    run(args)\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/run.py\", line 710, in run\n    elastic_launch(\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/launcher/api.py\", line 131, in __call__\n    return launch_agent(self._config, self._entrypoint, list(args))\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/launcher/api.py\", line 252, in launch_agent\n    result = agent.run()\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/metrics/api.py\", line 125, in wrapper\n    result = f(*args, **kwargs)\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py\", line 716, in run\n    self._shutdown(e.sigval)\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/local_elastic_agent.py\", line 190, in _shutdown\n    self._pcontext.close(death_sig)\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/api.py\", line 330, in close\n    self._close(death_sig=death_sig, timeout=timeout)\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/api.py\", line 720, in _close\n    handler.proc.wait(time_to_wait)\n  File \"/opt/conda/lib/python3.8/subprocess.py\", line 1083, in wait\n    return self._wait(timeout=timeout)\n  File \"/opt/conda/lib/python3.8/subprocess.py\", line 1802, in _wait\n    time.sleep(delay)\n  File \"/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/api.py\", line 60, in _terminate_process_handler\n    raise SignalException(f\"Process {os.getpid()} got signal: {sigval}\", sigval=sigval)\ntorch.distributed.elastic.multiprocessing.api.SignalException: Process 6333 got signal: 2\n",
+      "timestamp": "1721939536"
+    }
+  }
+}
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 709, in run
+    result = self._invoke_run(role)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 843, in _invoke_run
+    time.sleep(monitor_interval)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 60, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 6333 got signal: 2
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/conda/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 345, in wrapper
+    return f(*args, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/run.py", line 719, in main
+    run(args)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/run.py", line 710, in run
+    elastic_launch(
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 131, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/launcher/api.py", line 252, in launch_agent
+    result = agent.run()
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/metrics/api.py", line 125, in wrapper
+    result = f(*args, **kwargs)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/api.py", line 716, in run
+    self._shutdown(e.sigval)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/agent/server/local_elastic_agent.py", line 190, in _shutdown
+    self._pcontext.close(death_sig)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 330, in close
+    self._close(death_sig=death_sig, timeout=timeout)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 720, in _close
+    handler.proc.wait(time_to_wait)
+  File "/opt/conda/lib/python3.8/subprocess.py", line 1083, in wait
+    return self._wait(timeout=timeout)
+  File "/opt/conda/lib/python3.8/subprocess.py", line 1802, in _wait
+    time.sleep(delay)
+  File "/opt/conda/lib/python3.8/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 60, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 6333 got signal: 2
