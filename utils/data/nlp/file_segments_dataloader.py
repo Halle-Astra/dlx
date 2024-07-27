@@ -97,7 +97,7 @@ class FileSegmentsDataloader(Dataloader):
             #     f'current process_count: {self.dataloader.process_count.value}, data_q_size: {self.dataloader.data_queue.qsize()}')
             if self.current_file is None or \
                     (self.process_count.value // self.change_file_iters > \
-                     self.dataloader.change_file_times.value):
+                     self.change_file_times.value):
                 self.rload_file()
                 self.arrange_workers()
         logger.warning("WorkerWatcher is exiting.")
