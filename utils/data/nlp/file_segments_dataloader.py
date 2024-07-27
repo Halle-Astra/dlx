@@ -22,16 +22,6 @@ class FileSegmentsDataloader(Dataloader):
                  collate_fn=None,
                  worker_func=None
                  ):
-
-        super().__init__(
-            dataset_instance,
-            batch_size=batch_size,
-            steps=steps,
-            num_worker=num_worker,
-            queue_size=queue_size,
-            worker_func=self.worker_func,
-            collate_fn=collate_fn
-        )
         # This is nearly impossible.
         if worker_func is not None:
             self.worker_func = worker_func
@@ -49,6 +39,17 @@ class FileSegmentsDataloader(Dataloader):
         # variables for changing file
         self.process_count = Value('i', 0)
         self.change_file_event = Event()
+
+        # This init method will start the worker watcher which need the self.current_file has been initialized.
+        super().__init__(
+            dataset_instance,
+            batch_size=batch_size,
+            steps=steps,
+            num_worker=num_worker,
+            queue_size=queue_size,
+            worker_func=self.worker_func,
+            collate_fn=collate_fn
+        )
 
     def rload_file(self):
         self.current_file = random.choice(self.files)

@@ -7,7 +7,7 @@ class WuDao:
     def __init__(self, root):
         self.files = glob.glob(os.path.join(root, '*.json'))
 
-    def open_func_file(self, file):
+    def open_file_func(self, file):
         with open(file) as f:
             contents = json.load(f)
         return contents
