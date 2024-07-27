@@ -17,6 +17,16 @@ from loguru import logger
 from multiprocessing.managers import BaseManager
 import time
 from dlx.tokenizer.tiktoken import Tokenizer
+import sys
+
+class BaseWatcherThread(Thread):
+    def __init__(self):
+        super(BaseWatcherThread, self).__init__()
+        self.run = self.worker_watcher_func
+
+    def worker_watcher_func(self):
+        raise NotImplementedError
+
 
 
 # def worker_func(contents_num, content_list, queue, process_count, lock, workers_exit, tokenizer):  # 进程
@@ -38,24 +48,14 @@ from dlx.tokenizer.tiktoken import Tokenizer
 #             logger.error(str(e))
 #             pass
 
-
-class WorkerWatcher(Thread):
-    def __init__(self, dataloader_instance, num_proc=8):
-        super().__init__()
-        self.dataloader = dataloader_instance
-
-    def run(self, *args,):
-        while not self.dataloader.watcher_exit_event.is_set():
-
-            # do this finally
-            # logger.debug(
-            #     f'current process_count: {self.dataloader.process_count.value}, data_q_size: {self.dataloader.data_queue.qsize()}')
-            if self.dataloader.current_file is None or \
-                    (
-                            self.dataloader.process_count.value // self.dataloader.change_file_iters > self.dataloader.change_file_times.value):
-                self.dataloader.rload_file()
-                self.dataloader.arrange_workers()
-        logger.warning("WorkerWatcher is exiting.")
+#
+# class WorkerWatcher(Thread):
+#     def __init__(self, dataloader_instance, num_proc=8):
+#         super().__init__()
+#         self.dataloader = dataloader_instance
+#
+#     def run(self, *args,):
+#         pass
 
 
 def generate_batch(dataloader_instance, collate_fn=None):
@@ -78,8 +78,9 @@ def generate_batch(dataloader_instance, collate_fn=None):
 
 
 
-class Dataloader:
+class Dataloader(BaseWatcherThread):
     def __init__(self,
+                 dataset,
                  queue_size=2000,
                  batch_size=4,
                  steps=250000,
@@ -87,17 +88,40 @@ class Dataloader:
                  collate_fn=None,
                  generate_batch_func=generate_batch,
                  worker_func=None,
-                 num_samples=None
+                 worker_watcher=None
+                 # num_samples=None
                  ):
+        """
+
+        :param dataset:     An instance which is similar with torch.utils.data.Dataset, but the method __len__ can be
+            undefined. But the method arrange_workers must be rewritten in this special situation.
+        :param queue_size:
+        :param batch_size:
+        :param steps:
+        :param num_worker:
+        :param collate_fn:
+        :param generate_batch_func:
+        :param worker_func:
+        :param worker_watcher:
+        """
+        # init the part of Thread
+        super().__init__()
 
         self.debug = False
-
+        self.dataset_instance = dataset
         self.batch_size = batch_size
         self.steps = steps
         self.num_worker = num_worker
         self.collate_fn = collate_fn
+        if worker_func is None:
+            worker_func = self.make_dataset_iteration2queue_worker_func(
+                self.dataset_instance.__getitem__
+            )
         self.worker_func = worker_func
-        self.num_samples = num_samples
+        try:
+            self.num_samples = len(dataset)
+        except:
+            self.num_samples = None
 
         self.current_step = 0
         self.process_count = None
@@ -113,8 +137,14 @@ class Dataloader:
         self.watcher_exit_event = Event()
 
         # watch the progress of self.workers to change the content file
-        self.worker_watcher = WorkerWatcher(self, 8)
-        self.worker_watcher.start()  # self.process_count.value)
+        # self.worker_watcher = WorkerWatcher(self, 8)
+        if worker_watcher is not None:
+            self.worker_watcher = worker_watcher
+            self.worker_watcher.start()  # self.process_count.value)
+        else:
+            # Denoting the worker_watcher as self is considered for development later, not for using now.
+            self.worker_watcher = self
+            self.start_worker_watcher()
 
         self.workers = None
         self.tokenizer = Tokenizer()
@@ -139,8 +169,17 @@ class Dataloader:
     def arrange_workers(self):
         self.workers = Pool(self.num_worker)
         for i in range(self.num_samples):
-            Pool.async_apply(self.worker_func, args=(i,))
+            self.workers.apply_async(
+                self.worker_func,
+                args=(i,)
+            )
 
+    def make_dataset_iteration2queue_worker_func(self, func,):
+        def new_func(*args, **kwargs):
+            result = func(*args, **kwargs)
+            self.data_queue.put(result)
+            return result
+        return new_func
 
     def rload_file(self):
         raise NotImplementedError
@@ -150,12 +189,21 @@ class Dataloader:
         self.workers_exit_event.set()
         self.watcher_exit_event.set()
 
-    def sample_process(self, sample):
-        pass
+    def worker_watcher_func(self):
+        raise NotImplementedError
+
+    def start_worker_watcher(self):
+        try:
+            self.start()
+        except NotImplementedError:
+            pass
+        except Exception as e:
+            logger.error(e)
+            sys.exit(-1)
 
 
 if __name__ == "__main__":
     root = '/dataset/fd5061f6/chinese_data/WuDao/'
-    dataset = WuDao(root)
-    for i, item in enumerate(dataset):
-        logger.debug("{}, {}".format(i, item[0]))
+    # dataset = WuDao(root)
+    # for i, item in enumerate(dataset):
+    #     logger.debug("{}, {}".format(i, item[0]))
