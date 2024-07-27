@@ -64,7 +64,6 @@ class AutoRegressiveTrainer:
             if max_b_length > test_max_length:  # 2048:
                 batch = [i[:test_max_length] for i in batch]
                 max_b_length = test_max_length
-            start_pos_to_wait_predict = random.randint(1, min_b_length - 1)  # 不能输入空字符串
 
             bs = len(batch)
             input_ndarray = np.ones((bs, max_b_length)) * self.tokenizer.pad_id
@@ -73,20 +72,6 @@ class AutoRegressiveTrainer:
 
             loss = 0
             start_index = 0
-            # t = 0
-            # for end_index in range(start_pos_to_wait_predict, max_b_length - 1):
-            #     # t += 1
-            #     if end_index > 400:  # or t > 30:
-            #         break
-            #     input_x = input_tensor[:, start_index: end_index]
-            #     input_list = []
-            #     label_list = []
-            #     index_in_batch = []
-            #     for i in range(bs):
-            #         if not bool(input_tensor[i][end_index] == self.tokenizer.pad_id):
-            #             input_list.append(input_x[i])
-            #             label_list.append(input_tensor[i][end_index])
-            #             index_in_batch.append(i)
 
             input_x = torch.tensor(input_ndarray, dtype=self.dtype).to(self.device)
             input_y = input_x[:, 1:]

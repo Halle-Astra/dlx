@@ -35,6 +35,7 @@ def worker_func(contents_num, content_list, queue, process_count, lock, workers_
             lock.release()
         except Exception as e:
             logger.error(str(e))
+            pass
 
 
 class WorkerWatcher(Thread):
@@ -77,7 +78,8 @@ class WuDao:
                  queue_size=2000,
                  batch_size=4,
                  steps=250000,
-                 num_worker=8):
+                 num_worker=8,
+                 max_seq_len=None):
         self.files = glob.glob(os.path.join(root, '*.json'))
         self.debug = False
 
@@ -132,6 +134,7 @@ class WuDao:
         except Exception as e:
             logger.warning("锁无法释放或早已释放")
             logger.error(str(e))
+            pass
 
         if self.workers is not None:
             self.workers_exit_event.set()
@@ -178,4 +181,4 @@ if __name__ == "__main__":
     root = '/dataset/fd5061f6/chinese_data/WuDao/'
     dataset = WuDao(root)
     for i, item in enumerate(dataset):
-        logger.error("{}, {}".format(i, item[0]))
+        logger.debug("{}, {}".format(i, item[0]))

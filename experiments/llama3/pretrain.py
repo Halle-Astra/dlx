@@ -8,7 +8,7 @@ from fairscale.nn.model_parallel.initialize import (
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
-from dlx.data.datasets.nlp.wudao import WuDao
+from dlx.utils.data.nlp.wudao_draft import WuDao
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import Adam
@@ -27,7 +27,8 @@ args = {
     "multiple_of": 1024,
     "ffn_dim_multiplier": 1.3,
     "norm_eps": 1e-05,
-    "rope_theta": 500000.0
+    "rope_theta": 500000.0,
+    "max_seq_len": 2048
 }
 margs = ModelArgs(**args)
 
@@ -47,7 +48,7 @@ if __name__ == '__main__':
 
     # dataloader
     wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'
-    train_dataloader = WuDao(wudao_root, num_worker=1, batch_size=32)
+    train_dataloader = WuDao(wudao_root, num_worker=1, batch_size=32, max_seq_len=args.max_seq_len)
 
     # model
     ckpt_path = '/root/.cache/dlx/Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'

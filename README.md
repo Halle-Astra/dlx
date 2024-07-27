@@ -1,7 +1,16 @@
-https://cloud.tencent.com/developer/article/1836076
+# dlx
 
-https://developer.ibm.com/data/project-codenet/#get-this-dataset1
+An open source project to customize your own Large Language Model, designed for modifying and learning easily to against 
+current terrible ambiance which the code is complex and opaque. The most teams always only release the inference code, 
+without pretraining code. Such as, Openai and Meta-Llama.
 
-目前总结，terminate容易造成孤儿进程等一系列问题，应当使用event等来让程序正常结束
+If possible, the models of Computer Vision and Multi-modal will be added, too.
 
-取数据要一个线程
+## Highlights
+
+* powerful and diverse dataloader implementation with multi-processes and multi-threads, such as 
+`FileSegmentsDataloader` to process multi-files under a certain folder. 
+
+## test projects
+
+The projects under the module `dlx.test`.
