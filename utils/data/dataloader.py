@@ -118,6 +118,7 @@ class Dataloader(BaseWatcherThread):
                 self.dataset_instance.__getitem__
             )
         self.worker_func = worker_func
+
         try:
             self.num_samples = len(dataset)
         except:

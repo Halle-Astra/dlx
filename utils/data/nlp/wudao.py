@@ -12,6 +12,7 @@ class WuDao:
             contents = json.load(f)
         return contents
 
+
 if __name__ == '__main__':
     from dlx.utils.data.nlp.file_segments_dataloader import FileSegmentsDataloader
 

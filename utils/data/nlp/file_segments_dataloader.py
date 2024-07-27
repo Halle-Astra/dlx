@@ -29,7 +29,7 @@ class FileSegmentsDataloader(Dataloader):
             steps=steps,
             num_worker=num_worker,
             queue_size=queue_size,
-            worker_func=worker_func,
+            worker_func=self.worker_func,
             collate_fn=collate_fn
         )
         # This is nearly impossible.
