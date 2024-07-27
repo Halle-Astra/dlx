@@ -125,7 +125,7 @@ class Dataloader(BaseWatcherThread):
             self.num_samples = None
 
         self.current_step = 0
-        self.process_count = None
+        # self.process_count = None
 
         self.manager = Manager()
         self.lock = self.manager.Lock()
