@@ -103,7 +103,7 @@ class FileSegmentsDataloader(Dataloader):
         logger.warning("WorkerWatcher is exiting.")
 
     def worker_func(self,):#contents_num, content_list, queue, process_count, lock, workers_exit, tokenizer):  # 进程
-        while not self.workers_exit.is_set():
+        while not self.workers_exit_event.is_set():
             try:
                 if self.contents_num.value == 0:
                     return
