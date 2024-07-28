@@ -51,7 +51,7 @@ if __name__ == '__main__':
     # dataloader
     wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'
     train_dataset = WuDao(wudao_root, tokenizer)
-    train_dataloader = FileSegmentsDataloader(train_dataset, num_worker=1, batch_size=32, max_seq_len=args.max_seq_len)
+    train_dataloader = FileSegmentsDataloader(train_dataset, num_worker=1, batch_size=32,)
 
     # model
     ckpt_path = '/root/.cache/dlx/Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'
