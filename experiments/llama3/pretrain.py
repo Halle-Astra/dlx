@@ -8,7 +8,7 @@ from fairscale.nn.model_parallel.initialize import (
     initialize_model_parallel,
     model_parallel_is_initialized,
 )
-from dlx.utils.data.nlp.wudao_draft import WuDao
+from dlx.utils.data.nlp.wudao import WuDao
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.optim import Adam
