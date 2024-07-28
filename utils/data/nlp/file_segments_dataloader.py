@@ -29,7 +29,7 @@ class FileSegmentsDataloader(Dataloader):
         self.files = dataset_instance.files
         self.open_file_func = dataset_instance.open_file_func
         self.change_file_iters = change_file_iters
-        self.change_file_times = Value('i', 0)
+        self.change_file_times = Value('i', -1)
 
         # variables after opening file segment
         self.current_file = None
