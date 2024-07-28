@@ -15,7 +15,7 @@ from torch.optim import Adam
 from torch.nn import CrossEntropyLoss
 from argparse import ArgumentParser
 from dlx.tokenizer.tiktoken import Tokenizer
-
+from dlx.utils.data.nlp.file_segments_dataloader import FileSegmentsDataloader
 #torch.autograd.set_detect_anomaly(True)
 
 args = {
@@ -45,10 +45,13 @@ if __name__ == '__main__':
     print(f'当前的rank为{dist.get_rank()}')
     print(f'当前的world_size为{dist.get_world_size()}')
 
+    # tokenizer
+    tokenizer = Tokenizer()
 
     # dataloader
     wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'
-    train_dataloader = WuDao(wudao_root, num_worker=1, batch_size=32, max_seq_len=args.max_seq_len)
+    train_dataset = WuDao(wudao_root, tokenizer)
+    train_dataloader = FileSegmentsDataloader(train_dataset, num_worker=1, batch_size=32, max_seq_len=args.max_seq_len)
 
     # model
     ckpt_path = '/root/.cache/dlx/Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'

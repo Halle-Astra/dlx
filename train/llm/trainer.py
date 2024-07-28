@@ -60,7 +60,7 @@ class AutoRegressiveTrainer:
             input_x, label, other_args = batch
             input_x = input_x.to(self.device)
             label = label.to(self.device)
-            
+
             loss = 0
             start_index = 0
 
