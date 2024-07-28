@@ -1,6 +1,6 @@
 from dlx.utils.data.dataloader import (
     Dataloader,
-    generate_batch
+    default_generate_batch
 )
 import glob
 import random
