@@ -41,6 +41,8 @@ class FileSegmentsDataloader(Dataloader):
         self.change_file_event = Event()
 
         # This init method will start the worker watcher which need the self.current_file has been initialized.
+        if hasattr(dataset_instance, 'collate_fn'):
+            collate_fn = dataset_instance.collate_fn
         super().__init__(
             dataset_instance,
             batch_size=batch_size,
@@ -120,6 +122,9 @@ class FileSegmentsDataloader(Dataloader):
             except Exception as e:
                 logger.error(str(e))
                 pass
+
+    # def collate_fn(self):
+    #     raise NotImplementedError
 
     #
     # class WorkerWatcher(Thread):

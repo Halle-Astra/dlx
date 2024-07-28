@@ -58,7 +58,7 @@ class BaseWatcherThread(Thread):
 #         pass
 
 
-def generate_batch(dataloader_instance, collate_fn=None):
+def default_generate_batch(dataloader_instance, collate_fn=None):
     while not dataloader_instance.watcher_exit_event.is_set():
         if dataloader_instance.debug:
             if not dataloader_instance.data_queue.empty():
@@ -86,7 +86,7 @@ class Dataloader(BaseWatcherThread):
                  steps=250000,
                  num_worker=8,
                  collate_fn=None,
-                 generate_batch_func=generate_batch,
+                 generate_batch_func=default_generate_batch,
                  worker_func=None,
                  worker_watcher=None
                  # num_samples=None

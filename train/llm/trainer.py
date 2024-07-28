@@ -57,33 +57,20 @@ class AutoRegressiveTrainer:
 
     def start(self):
         for batch in self.dataloader:
-            b_lengths = [len(i) for i in batch]
-            min_b_length = min(b_lengths)
-            max_b_length = max(b_lengths)
-            test_max_length=150
-            if max_b_length > test_max_length:  # 2048:
-                batch = [i[:test_max_length] for i in batch]
-                max_b_length = test_max_length
-
-            bs = len(batch)
-            input_ndarray = np.ones((bs, max_b_length)) * self.tokenizer.pad_id
-            for i in range(bs):
-                input_ndarray[i, :b_lengths[i]] = batch[i]
-
+            input_x, label, other_args = batch
+            input_x = input_x.to(self.device)
+            label = label.to(self.device)
+            
             loss = 0
             start_index = 0
 
-            input_x = torch.tensor(input_ndarray, dtype=self.dtype).to(self.device)
-            input_y = input_x[:, 1:]
-            input_y = input_y.flatten()
-
-            output = self.model(input_x, start_index)
+            output = self.model(input_x, **other_args)
             output = output[:, :-1]
             bs, seq_length, vocab_size = output.shape 
             output = output.reshape(-1, vocab_size)
             # output_tid = torch.argmax(output, dim=-1)
             for loss_m in self.loss_modules:
-                loss_item = loss_m(output, input_y)
+                loss_item = loss_m(output, label)
                 if not torch.isnan(loss_item):
                     loss = loss + loss_item
 
