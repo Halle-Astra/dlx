@@ -3,6 +3,7 @@ import glob
 import json
 import numpy as np
 import torch
+from dlx.tokenizer.tiktoken import Tokenizer
 
 class WuDao:
     def __init__(self, root, tokenizer, dtype=torch.long, device='cpu'):
@@ -41,6 +42,6 @@ if __name__ == '__main__':
     from dlx.utils.data.nlp.file_segments_dataloader import FileSegmentsDataloader
 
     root = '/dataset/fd5061f6/chinese_data/WuDao/'
-    wudao_dataset = WuDao(root)
+    wudao_dataset = WuDao(root, Tokenizer())
 
     dataloader = FileSegmentsDataloader(wudao_dataset)
