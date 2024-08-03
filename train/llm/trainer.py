@@ -8,11 +8,44 @@ from fairscale.nn.model_parallel.initialize import (
     model_parallel_is_initialized,
 )
 import torch.distributed as dist
+from torch import nn
+from typing import (
+    Callable,
+    List
+)
+
+class LossList(nn.Module):
+    def __init__(self, loss_list: List):
+        super().__init__()
+        assert isinstance(loss_list, list), 'Input argument must be a list.'
+        self.loss_funcs = nn.ModuleList(list)
+
+    def forward(self, *args, **kwargs):
+        loss = 0
+        for loss_func in self.loss_funcs:
+            loss_value = loss_func(*args, **kwargs)
+            if not torch.isnan(loss_value):
+                loss = loss + loss_value
+        return loss
+
+class DefaultGenerativeLoss(nn.Module):
+    def __init__(self):
+        super(DefaultGenerativeLoss, self).__init__()
+        self.ce_loss = nn.CrossEntropyLoss()
+
+    def forward(self, output, label):
+        output = output[:, :-1]
+        bs, seq_length, vocab_size = output.shape
+        output = output.reshape(-1, vocab_size)
+        loss = self.ce_loss(output, label)
+        if torch.isnan(loss):
+            loss = 0
+        return loss
 
 
 class AutoRegressiveTrainer:
     def __init__(self, model, dataloader,
-                 loss_modules,
+                 loss_module: Callable = DefaultGenerativeLoss(),
                  optimizer=None,
                  world_size=None,
                  tokenizer=None,
@@ -34,9 +67,10 @@ class AutoRegressiveTrainer:
 
         self.model = model
         self.dataloader = dataloader
-        if not isinstance(loss_modules, list):
-            loss_modules = [loss_modules]
-        self.loss_modules = loss_modules
+        if isinstance(loss_module, list):
+            loss_module = LossList(loss_module)
+
+        self.loss_module = loss_module
         self.optimizer = optimizer
         self.tokenizer = tokenizer
         self.device = device
@@ -65,14 +99,13 @@ class AutoRegressiveTrainer:
             start_index = 0
 
             output = self.model(input_x, **other_args)
-            output = output[:, :-1]
-            bs, seq_length, vocab_size = output.shape 
-            output = output.reshape(-1, vocab_size)
+
             # output_tid = torch.argmax(output, dim=-1)
-            for loss_m in self.loss_modules:
-                loss_item = loss_m(output, label)
-                if not torch.isnan(loss_item):
-                    loss = loss + loss_item
+            loss = self.loss_module(output, label)
+            # for loss_m in self.loss_modules:
+            #     loss_item = loss_m(output, label)
+            #     if not torch.isnan(loss_item):
+            #         loss = loss + loss_item
 
 
             print(loss.item())
@@ -130,10 +163,11 @@ class AutoRegressiveTrainer:
                 output = output[:, -1]
                 print(output.detach().cpu().numpy())
                 # output_tid = torch.argmax(output, dim=-1)
-                for loss_m in self.loss_modules:
-                    loss_item = loss_m(output, input_y)
-                    if not torch.isnan(loss_item):
-                        loss = loss + loss_item
+                loss = self.loss_module(output, input_y)
+                # for loss_m in self.loss_modules:
+                #     loss_item = loss_m(output, input_y)
+                #     if not torch.isnan(loss_item):
+                #         loss = loss + loss_item
 
                 start_index = end_index
 

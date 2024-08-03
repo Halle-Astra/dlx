@@ -42,8 +42,8 @@ if __name__ == '__main__':
             model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
         initialize_model_parallel(model_parallel_size)
     torch.cuda.set_device(dist.get_rank())
-    print(f'当前的rank为{dist.get_rank()}')
-    print(f'当前的world_size为{dist.get_world_size()}')
+    # print(f'当前的rank为{dist.get_rank()}')
+    # print(f'当前的world_size为{dist.get_world_size()}')
 
     # tokenizer
     tokenizer = Tokenizer()
@@ -68,8 +68,11 @@ if __name__ == '__main__':
     tokenizer = Tokenizer()
 
     trainer = AutoRegressiveTrainer(
-        model, train_dataloader, loss_func, optimizer,
-        2, tokenizer, True, dtype=torch.long, parallel='ddp',
+        model, train_dataloader, loss_func,
+        optimizer=optimizer,
+        world_size=2, tokenizer=tokenizer,
+        model_is_kv_cache_enabled=True,
+        dtype=torch.long, parallel='ddp',
         grad_clip=None, device='cuda'
     )
     trainer.start()
