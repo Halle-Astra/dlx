@@ -68,7 +68,7 @@ if __name__ == '__main__':
     tokenizer = Tokenizer()
 
     trainer = AutoRegressiveTrainer(
-        model, train_dataloader, loss_func,
+        model, train_dataloader,
         optimizer=optimizer,
         world_size=2, tokenizer=tokenizer,
         model_is_kv_cache_enabled=True,
