@@ -13,6 +13,9 @@ from typing import (
     Callable,
     List
 )
+from loguru import logger
+from dlx.utils.train import save_parameters
+
 
 class LossList(nn.Module):
     def __init__(self, loss_list: List):
@@ -27,6 +30,7 @@ class LossList(nn.Module):
             if not torch.isnan(loss_value):
                 loss = loss + loss_value
         return loss
+
 
 class DefaultGenerativeLoss(nn.Module):
     def __init__(self):
@@ -43,6 +47,7 @@ class DefaultGenerativeLoss(nn.Module):
         return loss
 
 
+
 class AutoRegressiveTrainer:
     def __init__(self, model, dataloader,
                  loss_module: Callable = DefaultGenerativeLoss(),
@@ -53,7 +58,11 @@ class AutoRegressiveTrainer:
                  device='cuda',
                  dtype=torch.float16,
                  parallel=None,
-                 grad_clip=None):
+                 grad_clip=None,
+                 start_step=0,
+                 model_save_iters=10000,
+                 save_folder='models_train',
+                 epoch=4):
         """
 
         :param model:
@@ -78,6 +87,10 @@ class AutoRegressiveTrainer:
         self.world_size = world_size
         self.grad_clip = grad_clip
         self.model_is_kv_cache_enabled = model_is_kv_cache_enabled
+        self.step = start_step
+        self.model_save_iters = model_save_iters
+        self.save_folder = save_folder
+        self.epoch = epoch
 
     def init_parallel(self):
         torch.cuda.set_device(dist.get_rank())
@@ -90,98 +103,37 @@ class AutoRegressiveTrainer:
             initialize_model_parallel(model_parallel_size)
 
     def start(self):
-        for batch in self.dataloader:
-            input_x, label, other_args = batch
-            input_x = input_x.to(self.device)
-            label = label.to(self.device)
+        for cur_epoch in range(self.epoch):
+            for i, batch in enumerate(self.dataloader):
+                self.step += i
+                input_x, label, other_args = batch
+                input_x = input_x.to(self.device)
+                label = label.to(self.device)
 
-            loss = 0
-            start_index = 0
-
-            output = self.model(input_x, **other_args)
-
-            # output_tid = torch.argmax(output, dim=-1)
-            loss = self.loss_module(output, label)
-            # for loss_m in self.loss_modules:
-            #     loss_item = loss_m(output, label)
-            #     if not torch.isnan(loss_item):
-            #         loss = loss + loss_item
-
-
-            print(loss.item())
-            self.optimizer.zero_grad()
-
-            if loss > 0:
-                loss.backward(retain_graph=True)
-                if self.grad_clip is not None:
-                    torch.nn.utils.clip_grad_norm(
-                        self.model.parameters(),
-                        self.grad_clip
-                    )
-                self.optimizer.step()
-
-            if self.model_is_kv_cache_enabled:
-                self.model.module.reset_kv_cache()
-
-    def train_with_saving_memory(self):
-        """
-        This method is written by mimic Llama3 inference code, but discarded now.
-        :return:
-        """
-        for batch in self.dataloader:
-            b_lengths = [len(i) for i in batch]
-            min_b_length = min(b_lengths)
-            max_b_length = max(b_lengths)
-            start_pos_to_wait_predict = random.randint(1, min_b_length - 1)  # 不能输入空字符串
-
-            bs = len(batch)
-            input_tensor = np.ones((bs, max_b_length)) * self.tokenizer.pad_id
-            for i in range(bs):
-                input_tensor[i, :b_lengths[i]] = batch[i]
-
-            loss = 0
-            start_index = 0
-            # t = 0
-            for end_index in range(start_pos_to_wait_predict, max_b_length - 1):
-                # t += 1
-                if end_index > 400:  # or t > 30:
-                    break
-                input_x = input_tensor[:, start_index: end_index]
-                input_list = []
-                label_list = []
-                index_in_batch = []
-                for i in range(bs):
-                    if not bool(input_tensor[i][end_index] == self.tokenizer.pad_id):
-                        input_list.append(input_x[i])
-                        label_list.append(input_tensor[i][end_index])
-                        index_in_batch.append(i)
-
-                input_x = torch.tensor(np.vstack(input_list), dtype=self.dtype).to(self.device)
-                input_y = torch.tensor(label_list, dtype=self.dtype).to(self.device)
-
-                output = self.model(input_x, start_index, index_in_batch)
-                output = output[:, -1]
-                print(output.detach().cpu().numpy())
-                # output_tid = torch.argmax(output, dim=-1)
-                loss = self.loss_module(output, input_y)
-                # for loss_m in self.loss_modules:
-                #     loss_item = loss_m(output, input_y)
-                #     if not torch.isnan(loss_item):
-                #         loss = loss + loss_item
-
-                start_index = end_index
+                output = self.model(input_x, **other_args)
+                loss = self.loss_module(output, label)
 
                 print(loss.item())
-            self.optimizer.zero_grad()
 
-            if loss > 0:
-                loss.backward(retain_graph=True)
-                if self.grad_clip is not None:
-                    torch.nn.utils.clip_grad_norm(
-                        self.model.parameters(),
-                        self.grad_clip
-                    )
-                self.optimizer.step()
+                self.optimizer.zero_grad()
+                if loss > 0:
+                    loss.backward(retain_graph=True)
+                    if self.grad_clip is not None:
+                        torch.nn.utils.clip_grad_norm(
+                            self.model.parameters(),
+                            self.grad_clip
+                        )
+                    self.optimizer.step()
 
-            if self.model_is_kv_cache_enabled:
-                self.model.module.reset_kv_cache()
+                if self.model_is_kv_cache_enabled:
+                    self.model.module.reset_kv_cache()
+
+                eval_loss = -1
+
+                # parameters saving
+                if self.step % self.model_save_iters == 0:
+                    folder_name = f'{self.step}_{eval_loss}'
+                    folder = os.path.join(self.save_folder, folder_name)
+                    save_parameters(folder, self.model.state_dict(),
+                                    self.optimizer.state_dict(),
+                                    {'step':self.step})

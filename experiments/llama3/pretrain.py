@@ -16,7 +16,8 @@ from torch.nn import CrossEntropyLoss
 from argparse import ArgumentParser
 from dlx.tokenizer.tiktoken import Tokenizer
 from dlx.utils.data.nlp.file_segments_dataloader import FileSegmentsDataloader
-#torch.autograd.set_detect_anomaly(True)
+
+# torch.autograd.set_detect_anomaly(True)
 
 args = {
     "dim": 4,
@@ -32,9 +33,19 @@ args = {
 }
 margs = ModelArgs(**args)
 
-if __name__ == '__main__':
-    # ddp setting
-    model_parallel_size = 1
+
+def get_args():
+    args_helper = ArgumentParser()
+    args_helper.add_argument('--tensorboard_dir', type=str,
+                             default='', help='Defaultly, tensorboard is disabled.')
+    args_helper.add_argument('--model_parallel_size', type=int, default=1)
+    args_helper.add_argument('--save_folder', type=str,
+                             default='models_pretrain')
+    args_helper.add_argument('--resume_folder', type=str, default='')
+    args = args_helper.parse_args()
+    return args
+
+def init_parallel(model_parallel_size=1):
     if not torch.distributed.is_initialized():
         torch.distributed.init_process_group("nccl")
     if not model_parallel_is_initialized():
@@ -45,13 +56,21 @@ if __name__ == '__main__':
     # print(f'当前的rank为{dist.get_rank()}')
     # print(f'当前的world_size为{dist.get_world_size()}')
 
+if __name__ == '__main__':
+    # setup the arguments
+    args = get_args()
+
+    # ddp setting
+    init_parallel(args.model_parallel_size)
+
+
     # tokenizer
     tokenizer = Tokenizer()
 
     # dataloader
     wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'
     train_dataset = WuDao(wudao_root, tokenizer)
-    train_dataloader = FileSegmentsDataloader(train_dataset, num_worker=1, batch_size=32,)
+    train_dataloader = FileSegmentsDataloader(train_dataset, num_worker=1, batch_size=32, )
 
     # model
     ckpt_path = '/root/.cache/dlx/Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'
@@ -64,7 +83,6 @@ if __name__ == '__main__':
 
     # others
     optimizer = Adam(model.parameters(), lr=1e-5)
-    loss_func = CrossEntropyLoss()
     tokenizer = Tokenizer()
 
     trainer = AutoRegressiveTrainer(
