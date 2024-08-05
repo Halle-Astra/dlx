@@ -15,6 +15,7 @@ from typing import (
 )
 from loguru import logger
 from dlx.utils.train import save_parameters
+from dlx.train.trainer import BaseTrainer
 
 
 class LossList(nn.Module):
@@ -48,7 +49,7 @@ class DefaultGenerativeLoss(nn.Module):
 
 
 
-class AutoRegressiveTrainer:
+class AutoRegressiveTrainer(BaseTrainer):
     def __init__(self, model, dataloader,
                  loss_module: Callable = DefaultGenerativeLoss(),
                  optimizer=None,
@@ -62,7 +63,7 @@ class AutoRegressiveTrainer:
                  start_step=0,
                  model_save_iters=10000,
                  save_folder='models_train',
-                 epoch=4):
+                 epochs=4):
         """
 
         :param model:
@@ -90,7 +91,7 @@ class AutoRegressiveTrainer:
         self.step = start_step
         self.model_save_iters = model_save_iters
         self.save_folder = save_folder
-        self.epoch = epoch
+        self.epochs = epochs
 
     def init_parallel(self):
         torch.cuda.set_device(dist.get_rank())
@@ -103,9 +104,9 @@ class AutoRegressiveTrainer:
             initialize_model_parallel(model_parallel_size)
 
     def start(self):
-        for cur_epoch in range(self.epoch):
+        for cur_epoch in range(self.epochs):
             for i, batch in enumerate(self.dataloader):
-                self.step += i
+                self.step += 1
                 input_x, label, other_args = batch
                 input_x = input_x.to(self.device)
                 label = label.to(self.device)
@@ -132,8 +133,5 @@ class AutoRegressiveTrainer:
 
                 # parameters saving
                 if self.step % self.model_save_iters == 0:
-                    folder_name = f'{self.step}_{eval_loss}'
-                    folder = os.path.join(self.save_folder, folder_name)
-                    save_parameters(folder, self.model.state_dict(),
-                                    self.optimizer.state_dict(),
-                                    {'step':self.step})
+                    self.save(loss, eval_loss)
+                    pass
