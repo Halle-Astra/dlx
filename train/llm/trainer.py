@@ -104,9 +104,9 @@ class AutoRegressiveTrainer(BaseTrainer):
             initialize_model_parallel(model_parallel_size)
 
     def start(self):
-        for cur_epoch in range(self.epochs):
+        for _e in range(self.epochs):
             for i, batch in enumerate(self.dataloader):
-                self.step += 1
+                # self.step += 1
                 input_x, label, other_args = batch
                 input_x = input_x.to(self.device)
                 label = label.to(self.device)
@@ -134,4 +134,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                 # parameters saving
                 if self.step % self.model_save_iters == 0:
                     self.save(loss, eval_loss)
-                    pass
+
+                self.cur_step += i
+            self.save(loss, eval_loss)
+            self.cur_epoch += _e
