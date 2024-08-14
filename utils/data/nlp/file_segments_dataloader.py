@@ -39,7 +39,6 @@ class FileSegmentsDataloader(Dataloader):
 
         # variables for changing file
         self.process_count = Value('i', 0)
-        self.change_file_event = self.workers_exit_event  # Event()
 
         # This init method will start the worker watcher which need the self.current_file has been initialized.
         if hasattr(dataset_instance, 'collate_fn'):
@@ -54,6 +53,7 @@ class FileSegmentsDataloader(Dataloader):
             collate_fn=collate_fn,
             **kwargs
         )
+        self.change_file_event = self.workers_exit_event  # Event()
 
     def rload_file(self):
         self.current_file = random.choice(self.files)
