@@ -1,5 +1,7 @@
 import os
 import random
+import time
+
 import numpy as np
 import torch
 from fairscale.nn.model_parallel.initialize import (
@@ -64,7 +66,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                  epochs=4,
                  train_log_iters=200,
                  eval_log_iters=200,
-                 save_iters=20000,
+                 save_iters=2000,
                  eval_dataloader=None):
         """
 
@@ -108,20 +110,24 @@ class AutoRegressiveTrainer(BaseTrainer):
                 model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
             initialize_model_parallel(model_parallel_size)
 
-    def log_training(self, train_loss, valid_batch_ratio=None):
+    def log_training(self, train_loss, valid_batch_ratio, batch_cost):
         info_string = [];
         sep = ' | '
         info_string.append(f'step: {self.cur_step}')
         info_string.append(f'loss: {train_loss}')
         info_string.append(f'ratio of valid batches: {valid_batch_ratio*100}%')
+        info_string.append('batch cost: {:.3f}s'.format(sum(batch_cost)/len(batch_cost)))
         info_string = sep.join(info_string)
         logger.info(info_string)
 
     def start(self):
         valid_batch_nums = 0
+        _time_mem = {'batch_cost': []}
         for _e in range(self.epochs):
+            _time_wait_batch = time.time()
             for i, batch in enumerate(self.dataloader):
                 # self.step += 1
+                _time_got_batch = time.time()
                 input_x, label, other_args = batch
                 input_x = input_x.to(self.device)
                 label = label.to(self.device)
@@ -145,11 +151,13 @@ class AutoRegressiveTrainer(BaseTrainer):
                 if self.model_is_kv_cache_enabled:
                     self.model.module.reset_kv_cache()
 
+                # other minor operations
+                _time_mem['batch_cost'].append(_time_got_batch - _time_wait_batch)
 
                 # log training states
                 if self.cur_step % self.train_log_iters == 0:
                     valid_batch_ratio = valid_batch_nums / self.train_log_iters
-                    self.log_training(loss.item(), valid_batch_ratio)
+                    self.log_training(loss.item(), valid_batch_ratio, _time_mem['batch_cost'])
                     valid_batch_nums = 0
 
 
@@ -166,6 +174,7 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 self.cur_step += 1
 
+                _time_wait_batch = time.time()
 
             self.save(loss, eval_loss)
             self.cur_epoch += 1
