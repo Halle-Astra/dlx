@@ -14,17 +14,22 @@ class BaseTrainer:
     def save(self, train_loss=-1, eval_loss=-1):
         assert self.save_folder is not None, 'save_folder is not set up.'
         folder_name = f'epoch:{self.cur_epoch}-step:{self.cur_step}-train_loss:{train_loss}-eval_loss:{eval_loss}'
-        folder = os.path.join(self.save_folder, folder_name)
-        others = dict(cur_step=self.cur_step,
-                      cur_epoch=self.cur_epoch,
-                      loss=train_loss,
-                      eval_loss=eval_loss)
-        save_parameters(
-            folder,
-            self.model.state_dict(),
-            self.optimizer.state_dict(),
-            others
-        )
+
+        def _save(folder_name):
+            folder = os.path.join(self.save_folder, folder_name)
+            others = dict(cur_step=self.cur_step,
+                          cur_epoch=self.cur_epoch,
+                          loss=train_loss,
+                          eval_loss=eval_loss)
+            save_parameters(
+                folder,
+                self.model.state_dict(),
+                self.optimizer.state_dict(),
+                others
+            )
+
+        _save(folder_name)
+        _save('latest')
 
     def load_weights(self, weights_path, prefix='', ext='.pth'):
         if os.path.isfile(weights_path):
@@ -48,9 +53,9 @@ class BaseTrainer:
             folder = os.path.join(folder, 'latest')
             assert os.path.isdir(folder), 'Argument `folder` should be a directory.'
 
-        model_path = os.path.join(folder, 'model'+ext)
-        others_path = os.path.join(folder, 'others'+ext)
-        optim_path = os.path.join(folder, 'optim'+ext)
+        model_path = os.path.join(folder, 'model' + ext)
+        others_path = os.path.join(folder, 'others' + ext)
+        optim_path = os.path.join(folder, 'optim' + ext)
 
         self.load_weights(model_path)
 

@@ -67,10 +67,10 @@ class FileSegmentsDataloader(Dataloader):
     def arrange_workers(self):
         try:
             self.lock.release()
-            logger.info("锁已释放")
+            logger.debug("锁已释放")
         except Exception as e:
-            logger.warning("锁无法释放或早已释放")
-            logger.error(str(e))
+            logger.debug("锁无法释放或早已释放")
+            logger.debug(str(e))
             pass
 
         if self.workers is not None:
@@ -81,7 +81,7 @@ class FileSegmentsDataloader(Dataloader):
                     if not w.is_alive():
                         exit_num += 1
                 if exit_num == len(self.workers):
-                    logger.info("所有进程已成功退出")
+                    logger.debug("所有进程已成功退出")
                     break
             self.workers_exit_event.clear()
 

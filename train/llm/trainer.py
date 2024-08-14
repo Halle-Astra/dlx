@@ -62,7 +62,8 @@ class AutoRegressiveTrainer(BaseTrainer):
                  start_step=0,
                  save_folder='models_train',
                  epochs=4,
-                 log_iters=200,
+                 train_log_iters=200,
+                 eval_log_iters=200,
                  save_iters=20000):
         """
 
@@ -91,7 +92,8 @@ class AutoRegressiveTrainer(BaseTrainer):
         # self.step = start_step
         self.save_folder = save_folder
         self.epochs = epochs
-        self.log_iters = log_iters
+        self.train_log_iters = train_log_iters
+        self.eval_log_iters = eval_log_iters
         self.save_iters = save_iters
 
     def init_parallel(self):
@@ -132,9 +134,20 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 eval_loss = -1
 
-                # log
-                if self.cur_step % self.log_iters == 0:
-                    logger.info(f'loss: {loss.item()}')
+                # log training states
+                if self.cur_step % self.train_log_iters == 0:
+                    info_string = []; sep = ' | '
+                    info_string.append(f'step: {self.cur_step}')
+                    info_string.append(f'loss: {loss.item()}')
+                    info_string = sep.join(info_string)
+                    logger.info(info_string)
+
+
+                # log evaluating states
+                if self.cur_step % self.eval_log_iters == 0 and self.eval_dataloader is not None:
+                    pass
+
+
 
                 # save parameters
                 if self.cur_step % self.save_iters == 0 and self.cur_step > 0:
