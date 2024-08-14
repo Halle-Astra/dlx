@@ -88,8 +88,9 @@ class Dataloader(BaseWatcherThread):
                  collate_fn=None,
                  generate_batch_func=default_generate_batch,
                  worker_func=None,
-                 worker_watcher=None
-                 # num_samples=None
+                 worker_watcher=None,
+                 # num_samples=None,
+                 # as_train_as_test=False,
                  ):
         """
 
@@ -108,6 +109,7 @@ class Dataloader(BaseWatcherThread):
         super().__init__()
 
         self.debug = False
+        # self.as_train_as_test = as_train_as_test
         self.dataset_instance = dataset
         self.batch_size = batch_size
         self.steps = steps

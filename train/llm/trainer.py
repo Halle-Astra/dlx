@@ -48,7 +48,6 @@ class DefaultGenerativeLoss(nn.Module):
         return loss
 
 
-
 class AutoRegressiveTrainer(BaseTrainer):
     def __init__(self, model, dataloader,
                  loss_module: Callable = DefaultGenerativeLoss(),
@@ -61,9 +60,10 @@ class AutoRegressiveTrainer(BaseTrainer):
                  parallel=None,
                  grad_clip=None,
                  start_step=0,
-                 model_save_iters=10000,
                  save_folder='models_train',
-                 epochs=4):
+                 epochs=4,
+                 log_iters=200,
+                 save_iters=20000):
         """
 
         :param model:
@@ -74,7 +74,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         """
         # if parallel is not None and parallel == 'ddp':
         #     self.init_parallel()
-
+        super().__init__(save_folder)
         self.model = model
         self.dataloader = dataloader
         if isinstance(loss_module, list):
@@ -88,10 +88,11 @@ class AutoRegressiveTrainer(BaseTrainer):
         self.world_size = world_size
         self.grad_clip = grad_clip
         self.model_is_kv_cache_enabled = model_is_kv_cache_enabled
-        self.step = start_step
-        self.model_save_iters = model_save_iters
+        # self.step = start_step
         self.save_folder = save_folder
         self.epochs = epochs
+        self.log_iters = log_iters
+        self.save_iters = save_iters
 
     def init_parallel(self):
         torch.cuda.set_device(dist.get_rank())
@@ -114,7 +115,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                 output = self.model(input_x, **other_args)
                 loss = self.loss_module(output, label)
 
-                print(loss.item())
+                # print(loss.item())
 
                 self.optimizer.zero_grad()
                 if loss > 0:
@@ -131,10 +132,15 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 eval_loss = -1
 
-                # parameters saving
-                if self.step % self.model_save_iters == 0:
+                # log
+                if self.cur_step % self.log_iters == 0:
+                    logger.info(f'loss: {loss.item()}')
+
+                # save parameters
+                if self.cur_step % self.save_iters == 0 and self.cur_step > 0:
                     self.save(loss, eval_loss)
 
-                self.cur_step += i
+                self.cur_step += 1
+
             self.save(loss, eval_loss)
-            self.cur_epoch += _e
+            self.cur_epoch += 1

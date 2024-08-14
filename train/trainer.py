@@ -5,7 +5,6 @@ import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 
-
 class BaseTrainer:
     def __init__(self):
         self.cur_epoch = 0
@@ -13,6 +12,7 @@ class BaseTrainer:
         self.save_folder = None
 
     def save(self, train_loss=-1, eval_loss=-1):
+        assert self.save_folder is not None, 'save_folder is not set up.'
         folder_name = f'epoch:{self.cur_epoch}-step:{self.cur_step}-train_loss:{train_loss}-eval_loss:{eval_loss}'
         folder = os.path.join(self.save_folder, folder_name)
         others = dict(cur_step=self.cur_step,
@@ -26,11 +26,11 @@ class BaseTrainer:
             others
         )
 
-    def load_weights(self, weights_path, prefix='', postfix='pth'):
+    def load_weights(self, weights_path, prefix='', ext='.pth'):
         if os.path.isfile(weights_path):
             weights = [weights_path]
         else:
-            file_format = '*'.join([prefix, postfix])
+            file_format = '*'.join([prefix, ext])
             weights = glob.glob(
                 os.path.join(weights_path,
                              os.path.sep,
@@ -43,14 +43,14 @@ class BaseTrainer:
             else:
                 self.model.load_state_dict(weight)
 
-    def resume(self, folder):
+    def resume(self, folder, ext='.pth'):
         if 'latest' in os.listdir(folder):
             folder = os.path.join(folder, 'latest')
-            assert os.path.isdir(folder), 'Argument folder should be a directory.'
+            assert os.path.isdir(folder), 'Argument `folder` should be a directory.'
 
-        model_path = os.path.join(folder, 'model.pth')
-        others_path = os.path.join(folder, 'others.pth')
-        optim_path = os.path.join(folder, 'optim.pth')
+        model_path = os.path.join(folder, 'model'+ext)
+        others_path = os.path.join(folder, 'others'+ext)
+        optim_path = os.path.join(folder, 'optim'+ext)
 
         self.load_weights(model_path)
 
@@ -60,6 +60,3 @@ class BaseTrainer:
         others = torch.load(others_path)
         self.cur_step = others['cur_step']
         self.cur_epoch = others['cur_epoch']
-
-
-

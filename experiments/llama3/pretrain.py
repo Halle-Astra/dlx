@@ -45,6 +45,7 @@ def get_args():
     args = args_helper.parse_args()
     return args
 
+
 def init_parallel(model_parallel_size=1):
     if not torch.distributed.is_initialized():
         torch.distributed.init_process_group("nccl")
@@ -56,13 +57,13 @@ def init_parallel(model_parallel_size=1):
     # print(f'当前的rank为{dist.get_rank()}')
     # print(f'当前的world_size为{dist.get_world_size()}')
 
+
 if __name__ == '__main__':
-    # setup the arguments
+    # set up the arguments
     args = get_args()
 
     # ddp setting
     init_parallel(args.model_parallel_size)
-
 
     # tokenizer
     tokenizer = Tokenizer()

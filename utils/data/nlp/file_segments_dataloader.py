@@ -20,7 +20,8 @@ class FileSegmentsDataloader(Dataloader):
                  steps=250000,
                  num_worker=8,
                  collate_fn=None,
-                 worker_func=None
+                 worker_func=None,
+                 **kwargs,  # kwargs should only be the arguments for parent class Dataloader
                  ):
         # This is nearly impossible.
         if worker_func is not None:
@@ -50,7 +51,8 @@ class FileSegmentsDataloader(Dataloader):
             num_worker=num_worker,
             queue_size=queue_size,
             worker_func=self.worker_func,
-            collate_fn=collate_fn
+            collate_fn=collate_fn,
+            **kwargs
         )
 
     def rload_file(self):
