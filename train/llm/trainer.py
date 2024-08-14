@@ -64,7 +64,8 @@ class AutoRegressiveTrainer(BaseTrainer):
                  epochs=4,
                  train_log_iters=200,
                  eval_log_iters=200,
-                 save_iters=20000):
+                 save_iters=20000,
+                 eval_dataloader=None):
         """
 
         :param model:
@@ -95,6 +96,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         self.train_log_iters = train_log_iters
         self.eval_log_iters = eval_log_iters
         self.save_iters = save_iters
+        self.eval_dataloader = eval_dataloader
 
     def init_parallel(self):
         torch.cuda.set_device(dist.get_rank())
@@ -105,6 +107,14 @@ class AutoRegressiveTrainer(BaseTrainer):
             if model_parallel_size is None:
                 model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
             initialize_model_parallel(model_parallel_size)
+
+    def log_training(self, train_loss):
+        info_string = [];
+        sep = ' | '
+        info_string.append(f'step: {self.cur_step}')
+        info_string.append(f'loss: {train_loss}')
+        info_string = sep.join(info_string)
+        logger.info(info_string)
 
     def start(self):
         for _e in range(self.epochs):
@@ -136,11 +146,7 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 # log training states
                 if self.cur_step % self.train_log_iters == 0:
-                    info_string = []; sep = ' | '
-                    info_string.append(f'step: {self.cur_step}')
-                    info_string.append(f'loss: {loss.item()}')
-                    info_string = sep.join(info_string)
-                    logger.info(info_string)
+                    self.log_training(loss.item())
 
 
                 # log evaluating states
@@ -154,6 +160,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                     self.save(loss, eval_loss)
 
                 self.cur_step += 1
+
 
             self.save(loss, eval_loss)
             self.cur_epoch += 1
