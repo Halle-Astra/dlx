@@ -27,3 +27,5 @@ You can also have a quick experience by run
 * [ ] add support of AMP
 * [ ] rethink the variable `self.change_file_event` and try using it to resolve `list index out of range`
 * [ ] resolve the problem of process exiting failed
+* [ ] modify the file_segments_dataloader with a start switch, not a automatical start after initializing
+* [ ] add cpu support for debugging purpose
