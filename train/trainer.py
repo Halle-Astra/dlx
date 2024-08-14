@@ -6,7 +6,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 
 class BaseTrainer:
-    def __init__(self):
+    def __init__(self, ):
         self.cur_epoch = 0
         self.cur_step = 0
         self.save_folder = None

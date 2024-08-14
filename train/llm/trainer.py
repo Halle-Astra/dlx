@@ -74,7 +74,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         """
         # if parallel is not None and parallel == 'ddp':
         #     self.init_parallel()
-        super().__init__(save_folder)
+        super().__init__()
         self.model = model
         self.dataloader = dataloader
         if isinstance(loss_module, list):
