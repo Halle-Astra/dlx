@@ -3,6 +3,7 @@ import os
 import glob
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
+from loguru import logger
 
 
 class BaseTrainer:
@@ -27,6 +28,7 @@ class BaseTrainer:
                 self.optimizer.state_dict(),
                 others
             )
+            logger.info(f'saved weights to {folder}')
 
         _save(folder_name)
         _save('latest')
@@ -65,3 +67,5 @@ class BaseTrainer:
         others = torch.load(others_path)
         self.cur_step = others['cur_step']
         self.cur_epoch = others['cur_epoch']
+
+        logger.info(f'loaded weights from {folder}')

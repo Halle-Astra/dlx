@@ -108,15 +108,17 @@ class AutoRegressiveTrainer(BaseTrainer):
                 model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
             initialize_model_parallel(model_parallel_size)
 
-    def log_training(self, train_loss):
+    def log_training(self, train_loss, valid_batch_ratio=None):
         info_string = [];
         sep = ' | '
         info_string.append(f'step: {self.cur_step}')
         info_string.append(f'loss: {train_loss}')
+        info_string.append(f'ratio of valid batches: {valid_batch_ratio*100}%')
         info_string = sep.join(info_string)
         logger.info(info_string)
 
     def start(self):
+        valid_batch_nums = 0
         for _e in range(self.epochs):
             for i, batch in enumerate(self.dataloader):
                 # self.step += 1
@@ -138,18 +140,21 @@ class AutoRegressiveTrainer(BaseTrainer):
                             self.grad_clip
                         )
                     self.optimizer.step()
+                    valid_batch_nums += 1
 
                 if self.model_is_kv_cache_enabled:
                     self.model.module.reset_kv_cache()
 
-                eval_loss = -1
 
                 # log training states
                 if self.cur_step % self.train_log_iters == 0:
-                    self.log_training(loss.item())
+                    valid_batch_ratio = valid_batch_nums / self.train_log_iters
+                    self.log_training(loss.item(), valid_batch_ratio)
+                    valid_batch_nums = 0
 
 
                 # log evaluating states
+                eval_loss = -1
                 if self.cur_step % self.eval_log_iters == 0 and self.eval_dataloader is not None:
                     pass
 
