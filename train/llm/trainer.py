@@ -116,7 +116,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         info_string.append(f'step: {self.cur_step}')
         info_string.append(f'loss: {train_loss}')
         info_string.append(f'ratio of valid batches: {valid_batch_ratio*100}%')
-        info_string.append('batch cost: {:.3f}s'.format(sum(batch_cost)/len(batch_cost)))
+        info_string.append('waiting batch: {:.3f}s'.format(sum(batch_cost)/len(batch_cost)))
         info_string = sep.join(info_string)
         logger.info(info_string)
 

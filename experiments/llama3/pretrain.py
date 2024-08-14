@@ -74,7 +74,7 @@ if __name__ == '__main__':
     train_dataloader = FileSegmentsDataloader(train_dataset, num_worker=1, batch_size=32, )
 
     # model
-    ckpt_path = '/root/.cache/dlx/Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'
+    # ckpt_path = '/root/.cache/dlx/Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'
     # weights = torch.load(ckpt_path, map_location="cpu")
     # if not isinstance(weights, dict):
     #     te_weight = {'tok_embeddings.weight': weights}
