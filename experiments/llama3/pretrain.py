@@ -16,6 +16,7 @@ from torch.nn import CrossEntropyLoss
 from argparse import ArgumentParser
 from dlx.tokenizer.tiktoken import Tokenizer
 from dlx.utils.data.nlp.file_segments_dataloader import FileSegmentsDataloader
+from dlx.utils.stat import stat_parameters_num
 
 # torch.autograd.set_detect_anomaly(True)
 
@@ -81,6 +82,8 @@ if __name__ == '__main__':
     model = Transformer(margs).cuda()
     # model.load_state_dict(weights)
     model = DDP(model, broadcast_buffers=False)
+    stat_parameters_num(model)
+
 
     # others
     optimizer = Adam(model.parameters(), lr=1e-5)

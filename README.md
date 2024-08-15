@@ -22,10 +22,10 @@ You can also have a quick experience by run
 * [ ] add another method for file_segments_dataloader to generate sample list.
 * [ ] add helpful function for tensorboard-style summary writer
 * [ ] analyze the reason of low GPU utilizing
-* [ ] analyze the situation and the modifying necessity of err `list index out of range`
+* [x] analyze the situation and the modifying necessity of err `list index out of range`
 * [ ] study the argument `n_head_kv` of Llama3, why it will influence the success of model building
 * [ ] add support of AMP
-* [ ] rethink the variable `self.change_file_event` and try using it to resolve `list index out of range`
+* [x] rethink the variable `self.change_file_event` and try using it to resolve `list index out of range`
 * [ ] resolve the problem of process exiting failed
-* [ ] modify the file_segments_dataloader with a start switch, not a automatical start after initializing
+* [ ] modify the file_segments_dataloader with a start switch, not an automatical start after initializing
 * [ ] add cpu support for debugging purpose
