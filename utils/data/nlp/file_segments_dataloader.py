@@ -77,7 +77,8 @@ class FileSegmentsDataloader(Dataloader):
             pass
 
         if self.workers is not None:
-            self.workers_exit_event.set()
+            if not self.workers_exit_event.is_set():
+                self.workers_exit_event.set()
             while True:
                 exit_num = 0
                 for w in self.workers:
