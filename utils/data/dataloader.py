@@ -139,6 +139,9 @@ class Dataloader(BaseWatcherThread):
         self.workers_exit_event = Event()
         self.watcher_exit_event = Event()
 
+        self.workers = None
+
+
         # watch the progress of self.workers to change the content file
         # self.worker_watcher = WorkerWatcher(self, 8)
         if worker_watcher is not None:
@@ -149,7 +152,6 @@ class Dataloader(BaseWatcherThread):
             self.worker_watcher = self
             self.start_worker_watcher()
 
-        self.workers = None
         self.tokenizer = Tokenizer()
 
         # start a thread to take data from queue

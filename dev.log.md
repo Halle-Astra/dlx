@@ -12,3 +12,7 @@ https://developer.ibm.com/data/project-codenet/#get-this-dataset1
 通信与数据取出采用时间戳或随机token，派发任务时顺便拿到一个之后取数据用的token就行，然后这个token作为key
 
 但是目前还是先实现一个简单版本，之后再做实现，不然遥遥无期。
+
+## 20240815
+关于当前为什么rload里不能判断workers is None，是因为dataloader.workers被赋值为None是在触发rload之后，
+因为rload载入文件比较慢，所以子程序当执行arrange_workers时，都已经是主进程给workers赋值之后了。
