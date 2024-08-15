@@ -53,14 +53,17 @@ class FileSegmentsDataloader(Dataloader):
             collate_fn=collate_fn,
             **kwargs
         )
-        self.change_file_event = self.workers_exit_event  # Event()
+        self.change_file_event = Event()
 
     def rload_file(self):
+        # inform workers exit before changing file, to resolve `list index out of range`
+        self.workers_exit_event.set()
+
         self.current_file = random.choice(self.files)
         self.content_list = self.open_file_func(self.current_file)
 
         self.contents_num.value = len(self.content_list)
-        self.change_file_event.set()
+        # self.change_file_event.set()
         self.change_file_times.value += 1
         logger.debug(f'Source file {self.current_file} is loaded.')
 
