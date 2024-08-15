@@ -139,7 +139,7 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 self.optimizer.zero_grad()
                 if loss > 0:
-                    loss.backward(retain_graph=True)
+                    loss.backward()  # retain_graph=True)
                     if self.grad_clip is not None:
                         torch.nn.utils.clip_grad_norm(
                             self.model.parameters(),
