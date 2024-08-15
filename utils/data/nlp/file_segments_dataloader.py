@@ -57,7 +57,10 @@ class FileSegmentsDataloader(Dataloader):
 
     def rload_file(self):
         # inform workers exit before changing file, to resolve `list index out of range`
-        if not self.workers_exit_event.is_set():
+        # if self.workers is None, and make workers_exit_event set,
+        # the first batch of workers will be created but not work
+        if self.workers is not None \
+                and not self.workers_exit_event.is_set():
             self.workers_exit_event.set()
 
         self.current_file = random.choice(self.files)
