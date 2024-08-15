@@ -30,6 +30,7 @@ class FileSegmentsDataloader(Dataloader):
         self.files = dataset_instance.files
         self.open_file_func = dataset_instance.open_file_func
         self.change_file_iters = change_file_iters
+        self.change_file_event = Event()
         self.change_file_times = Value('i', -1)
 
         # variables after opening file segment
@@ -53,11 +54,11 @@ class FileSegmentsDataloader(Dataloader):
             collate_fn=collate_fn,
             **kwargs
         )
-        self.change_file_event = Event()
 
     def rload_file(self):
         # inform workers exit before changing file, to resolve `list index out of range`
-        self.workers_exit_event.set()
+        if not self.workers_exit_event.is_set():
+            self.workers_exit_event.set()
 
         self.current_file = random.choice(self.files)
         self.content_list = self.open_file_func(self.current_file)
