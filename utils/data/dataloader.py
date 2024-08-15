@@ -201,7 +201,7 @@ class Dataloader(BaseWatcherThread):
         except NotImplementedError:
             pass
         except Exception as e:
-            logger.error(e)
+            logger.error(f'{e} | start worker watcher failed.')
             sys.exit(-1)
 
 
