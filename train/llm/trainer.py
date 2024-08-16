@@ -159,16 +159,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                 self.optimizer.zero_grad()
                 if loss > 0:
                     # loss.backward()  # retain_graph=True)
-                    if not self.amp:
-                        loss.backward()
-                        if self.grad_clip is not None:
-                            torch.nn.utils.clip_grad_norm(
-                                self.model.parameters(),
-                                self.grad_clip
-                            )
-                        self.optimizer.step()
-
-                    else:
+                    if self.amp:
                         self.scaler.scale(loss).backward()
                         if self.grad_clip is not None:
                             torch.nn.utils.clip_grad_norm(
@@ -177,6 +168,14 @@ class AutoRegressiveTrainer(BaseTrainer):
                             )
                         self.scaler.step(self.optimizer)
                         self.scaler.update()
+                    else:
+                        loss.backward()
+                        if self.grad_clip is not None:
+                            torch.nn.utils.clip_grad_norm(
+                                self.model.parameters(),
+                                self.grad_clip
+                            )
+                        self.optimizer.step()
 
                     valid_batch_nums += 1
 
