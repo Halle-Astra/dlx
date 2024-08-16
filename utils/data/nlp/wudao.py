@@ -5,6 +5,7 @@ import numpy as np
 import torch
 from dlx.tokenizer.tiktoken import Tokenizer
 
+
 class WuDao:
     def __init__(self, root, tokenizer, dtype=torch.long, device='cpu'):
         self.files = glob.glob(os.path.join(root, '*.json'))
@@ -21,7 +22,7 @@ class WuDao:
         b_lengths = [len(i) for i in batch]
         min_b_length = min(b_lengths)
         max_b_length = max(b_lengths)
-        test_max_length = 150
+        test_max_length = 2048
         if max_b_length > test_max_length:  # 2048:
             batch = [i[:test_max_length] for i in batch]
             max_b_length = test_max_length
@@ -31,11 +32,11 @@ class WuDao:
         for i in range(bs):
             input_ndarray[i, :b_lengths[i]] = batch[i]
 
-        input_x = torch.tensor(input_ndarray, dtype=self.dtype)#.to(self.device)
+        input_x = torch.tensor(input_ndarray, dtype=self.dtype)  # .to(self.device)
         input_y = input_x[:, 1:]
         input_y = input_y.flatten()
 
-        return [input_x, input_y, {'start_pos':0}]
+        return [input_x, input_y, {'start_pos': 0}]
 
 
 if __name__ == '__main__':
