@@ -94,7 +94,7 @@ if __name__ == '__main__':
         model, train_dataloader,
         optimizer=optimizer,
         world_size=2, tokenizer=tokenizer,
-        model_is_kv_cache_enabled=True,
+        model_is_kv_cache_enabled=False,
         dtype=torch.long, parallel='ddp',
         grad_clip=None, device='cuda'
     )
