@@ -30,7 +30,8 @@ args = {
     "ffn_dim_multiplier": 1.3,
     "norm_eps": 1e-05,
     "rope_theta": 500000.0,
-    "max_seq_len": 2048
+    "max_seq_len": 2048,
+    "mode": "train"
 }
 margs = ModelArgs(**args)
 

@@ -30,6 +30,7 @@ class ModelArgs:
 
     max_batch_size: int = 32
     max_seq_len: int = 2048
+    mode: str = 'infer'
 
 
 class RMSNorm(torch.nn.Module):
@@ -127,22 +128,26 @@ class Attention(nn.Module):
             # init_method=torch.nn.init.kaiming_uniform_,
         )
 
-        self.cache_k = torch.zeros(
-            (
-                args.max_batch_size,
-                args.max_seq_len,
-                self.n_local_kv_heads,
-                self.head_dim,
-            )
-        ).cuda()
-        self.cache_v = torch.zeros(
-            (
-                args.max_batch_size,
-                args.max_seq_len,
-                self.n_local_kv_heads,
-                self.head_dim,
-            )
-        ).cuda()
+        if self.args.mode == 'train':
+            self.cache_k=None
+            self.cache_v = None
+        else:
+            self.cache_k = torch.zeros(
+                (
+                    args.max_batch_size,
+                    args.max_seq_len,
+                    self.n_local_kv_heads,
+                    self.head_dim,
+                )
+            )#.cuda()
+            self.cache_v = torch.zeros(
+                (
+                    args.max_batch_size,
+                    args.max_seq_len,
+                    self.n_local_kv_heads,
+                    self.head_dim,
+                )
+            )#.cuda()
 
     def reset_kv_cache(self):
         self.cache_k = torch.zeros(
@@ -180,19 +185,23 @@ class Attention(nn.Module):
 
         xq, xk = apply_rotary_emb(xq, xk, freqs_cis=freqs_cis)
 
-        self.cache_k = self.cache_k.to(xq)
-        self.cache_v = self.cache_v.to(xq)
+        if self.args.mode == 'train':
+            self.cache_k = self.cache_k.to(xq)
+            self.cache_v = self.cache_v.to(xq)
 
-        if index_in_batch is None:
-            self.cache_k[:bsz, start_pos: start_pos + seqlen] = xk
-            self.cache_v[:bsz, start_pos: start_pos + seqlen] = xv
-            keys = self.cache_k[:bsz, : start_pos + seqlen]
-            values = self.cache_v[:bsz, : start_pos + seqlen]
+            if index_in_batch is None:
+                self.cache_k[:bsz, start_pos: start_pos + seqlen] = xk
+                self.cache_v[:bsz, start_pos: start_pos + seqlen] = xv
+                keys = self.cache_k[:bsz, : start_pos + seqlen]
+                values = self.cache_v[:bsz, : start_pos + seqlen]
+            else:
+                self.cache_k[index_in_batch, start_pos: start_pos + seqlen] = xk
+                self.cache_v[index_in_batch, start_pos: start_pos + seqlen] = xv
+                keys = self.cache_k[index_in_batch, : start_pos + seqlen]
+                values = self.cache_v[index_in_batch, : start_pos + seqlen]
         else:
-            self.cache_k[index_in_batch, start_pos: start_pos + seqlen] = xk
-            self.cache_v[index_in_batch, start_pos: start_pos + seqlen] = xv
-            keys = self.cache_k[index_in_batch, : start_pos + seqlen]
-            values = self.cache_v[index_in_batch, : start_pos + seqlen]
+            keys = xk
+            values = xv
 
         # repeat k/v heads if n_kv_heads < n_heads
         keys = repeat_kv(
