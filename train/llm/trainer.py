@@ -162,7 +162,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                 input_x = input_x.to(self.device)
                 label = label.to(self.device)
 
-                # _time_got_batch = timer.mark()
+                _time_got_batch = timer.mark()
                 # logger.debug(f'{self.cur_step}, cost of catching batch: {_time_got_batch - _time_wait_batch}s')
                 # logger.debug(f'the shape of input_x is {input_x.shape}')
 
@@ -173,7 +173,8 @@ class AutoRegressiveTrainer(BaseTrainer):
                     with autocast():
                         output = self.model(input_x, **other_args)
                         loss = self.loss_module(output, label)
-
+                _time_end_loss = timer.mark()
+                logger.debug(f'cost of forward :{_time_end_loss - _time_got_batch}')
                 # print(loss.item())
 
                 valid_batch_nums += 1 if loss > 0 else ...
@@ -184,6 +185,8 @@ class AutoRegressiveTrainer(BaseTrainer):
                     self._backward(loss_accumulated)
                     loss_accumulated = 0
 
+                _time_end_backward = timer.mark()
+                logger.debug(f'cost of backward: {_time_end_backward - _time_end_loss}')
 
                 if self.model_is_kv_cache_enabled:
                     self.model.module.reset_kv_cache()
