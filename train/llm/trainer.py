@@ -1,7 +1,7 @@
 import os
 import random
 import time
-
+from torch.cuda.amp import autocast, GradScaler
 import numpy as np
 import torch
 from fairscale.nn.model_parallel.initialize import (
@@ -58,7 +58,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                  tokenizer=None,
                  model_is_kv_cache_enabled=False,
                  device='cuda',
-                 dtype=torch.float16,
+                 ids_dtype=torch.float16,
                  parallel=None,
                  grad_clip: float = None,
                  start_step=0,
@@ -67,7 +67,8 @@ class AutoRegressiveTrainer(BaseTrainer):
                  train_log_iters=200,
                  eval_log_iters=200,
                  save_iters=2000,
-                 eval_dataloader=None):
+                 eval_dataloader=None,
+                 amp=False):
         """
 
         :param model:
@@ -88,7 +89,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         self.optimizer = optimizer
         self.tokenizer = tokenizer
         self.device = device
-        self.dtype = dtype
+        self.dtype = ids_dtype
         self.world_size = world_size
         self.grad_clip = grad_clip
         self.model_is_kv_cache_enabled = model_is_kv_cache_enabled
@@ -99,6 +100,9 @@ class AutoRegressiveTrainer(BaseTrainer):
         self.eval_log_iters = eval_log_iters
         self.save_iters = save_iters
         self.eval_dataloader = eval_dataloader
+        self.amp = amp
+        if amp:
+            self.scaler = GradScaler()
 
     def init_parallel(self):
         torch.cuda.set_device(dist.get_rank())
@@ -142,20 +146,38 @@ class AutoRegressiveTrainer(BaseTrainer):
                 _time_got_batch = time.time()
                 logger.debug(f'the shape of input_x is {input_x.shape}')
 
-                output = self.model(input_x, **other_args)
-                loss = self.loss_module(output, label)
+                if not self.amp:
+                    output = self.model(input_x, **other_args)
+                    loss = self.loss_module(output, label)
+                else:
+                    with autocast():
+                        output = self.model(input_x, **other_args)
+                        loss = self.loss_module(output, label)
 
                 # print(loss.item())
 
                 self.optimizer.zero_grad()
                 if loss > 0:
-                    loss.backward()  # retain_graph=True)
-                    if self.grad_clip is not None:
-                        torch.nn.utils.clip_grad_norm(
-                            self.model.parameters(),
-                            self.grad_clip
-                        )
-                    self.optimizer.step()
+                    # loss.backward()  # retain_graph=True)
+                    if not self.amp:
+                        loss.backward()
+                        if self.grad_clip is not None:
+                            torch.nn.utils.clip_grad_norm(
+                                self.model.parameters(),
+                                self.grad_clip
+                            )
+                        self.optimizer.step()
+
+                    else:
+                        self.scaler.scale(loss).backward()
+                        if self.grad_clip is not None:
+                            torch.nn.utils.clip_grad_norm(
+                                self.model.parameters(),
+                                self.grad_clip
+                            )
+                        self.scaler.step(self.optimizer)
+                        self.scaler.update()
+
                     valid_batch_nums += 1
 
                 if self.model_is_kv_cache_enabled:
