@@ -88,6 +88,14 @@ def repeat_kv(x: torch.Tensor, n_rep: int) -> torch.Tensor:
     )
 
 
+class TempLinear(nn.Linear):
+    def __init__(self, *args, **kwargs):
+        del kwargs['gather_output'], kwargs['init_method']
+
+        super(TempLinear, self).__init__(*args, **kwargs)
+        self.forward = super().forward
+
+
 class Attention(nn.Module):
     def __init__(self, args: ModelArgs):
         super().__init__()
@@ -99,10 +107,10 @@ class Attention(nn.Module):
         self.head_dim = args.dim // args.n_heads
         self.args = args
 
-        wq_linear = nn.Linear if model_parallel_size == 1 else ColumnParallelLinear
-        wk_linear = nn.Linear if model_parallel_size == 1 else ColumnParallelLinear
-        wv_linear = nn.Linear if model_parallel_size == 1 else ColumnParallelLinear
-        wo_linear = nn.Linear if model_parallel_size == 1 else RowParallelLinear
+        wq_linear = TempLinear if model_parallel_size == 1 else ColumnParallelLinear
+        wk_linear = TempLinear if model_parallel_size == 1 else ColumnParallelLinear
+        wv_linear = TempLinear if model_parallel_size == 1 else ColumnParallelLinear
+        wo_linear = TempLinear if model_parallel_size == 1 else RowParallelLinear
 
 
         self.wq = wq_linear(
