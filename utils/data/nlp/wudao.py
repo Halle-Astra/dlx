@@ -22,7 +22,7 @@ class WuDao:
         b_lengths = [len(i) for i in batch]
         min_b_length = min(b_lengths)
         max_b_length = max(b_lengths)
-        test_max_length = 512
+        test_max_length = 150
         if max_b_length > test_max_length:  # 2048:
             batch = [i[:test_max_length] for i in batch]
             max_b_length = test_max_length
