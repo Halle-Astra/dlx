@@ -27,3 +27,5 @@ https://developer.ibm.com/data/project-codenet/#get-this-dataset1
 2. ~~初步简化llama3的代码，方便分析训练llama3时为什么显卡占用率这么低~~
 2. 测试一下原版llama3的行列并行Linear层的加速效果(*貌似显卡使用率更低了，但是显存占用量显著减少了*)
 3. 在150和bs=32时，view和连续内存对速度和显存的优化都不明显（几乎没有）
+
+实在是不行了，基本来看，基本不可能有望在单卡上训练了，干脆彻底转向为deepspeed开发吧

@@ -313,7 +313,11 @@ class Transformer(nn.Module):
         self.vocab_size = params.vocab_size
         self.n_layers = params.n_layers
 
-        self.tok_embeddings = VocabParallelEmbedding(
+        model_parallel_size = fs_init.get_model_parallel_world_size()
+        embedding_layer = torch.nn.Embedding if model_parallel_size == 1 else VocabParallelEmbedding
+        output_linear = nn.Linear if model_parallel_size == 1 else ColumnParallelLinear
+
+        self.tok_embeddings = embedding_layer(
             params.vocab_size, params.dim, init_method=torch.nn.init.kaiming_uniform_
         )
 
@@ -322,7 +326,7 @@ class Transformer(nn.Module):
             self.layers.append(TransformerBlock(layer_id, params))
 
         self.norm = RMSNorm(params.dim, eps=params.norm_eps)
-        self.output = ColumnParallelLinear(
+        self.output = output_linear(
             params.dim, params.vocab_size, bias=False, init_method=torch.nn.init.kaiming_uniform_
         )
 
