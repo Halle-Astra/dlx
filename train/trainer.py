@@ -11,6 +11,7 @@ class BaseTrainer:
         self.cur_epoch = 0
         self.cur_step = 0
         self.save_folder = None
+        self.accumulate_iters = 1
 
     def save(self, train_loss=-1, eval_loss=-1):
         assert self.save_folder is not None, 'save_folder is not set up.'

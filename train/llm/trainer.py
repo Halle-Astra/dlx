@@ -69,7 +69,8 @@ class AutoRegressiveTrainer(BaseTrainer):
                  eval_log_iters=200,
                  save_iters=2000,
                  eval_dataloader=None,
-                 amp=False):
+                 amp=False,
+                 accumulate_iters=20):
         """
 
         :param model:
@@ -100,8 +101,10 @@ class AutoRegressiveTrainer(BaseTrainer):
         self.train_log_iters = train_log_iters
         self.eval_log_iters = eval_log_iters
         self.save_iters = save_iters
+        self.accumulate_iters = accumulate_iters
         self.eval_dataloader = eval_dataloader
         self.amp = amp
+
         if amp:
             self.scaler = GradScaler()
 
@@ -149,6 +152,7 @@ class AutoRegressiveTrainer(BaseTrainer):
     def start(self):
         valid_batch_nums = 0
         _time_mem = {'batch_cost': []}
+        loss_accumulated = 0
         for _e in range(self.epochs):
             _time_wait_batch = time.time()
             for i, batch in enumerate(self.dataloader):
@@ -171,12 +175,14 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 # print(loss.item())
 
+                valid_batch_nums += 1 if loss > 0 else ...
+                loss_accumulated = loss + loss_accumulated
                 self.optimizer.zero_grad()
-                if loss > 0:
+                if self.cur_step % self.accumulate_iters == 0 and loss_accumulated > 0:
                     # loss.backward()  # retain_graph=True)
-                    self._backward(loss)
+                    self._backward(loss_accumulated)
+                    loss_accumulated = 0
 
-                    valid_batch_nums += 1
 
                 if self.model_is_kv_cache_enabled:
                     self.model.module.reset_kv_cache()
