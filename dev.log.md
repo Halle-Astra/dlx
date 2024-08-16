@@ -33,3 +33,22 @@ https://developer.ibm.com/data/project-codenet/#get-this-dataset1
 显存占用问题先不管了，但是现在终于找到占用率的问题了，通过对前向传播和反向传播的耗时观察来看，每次需要等待才能前向传播的情况下，等待结束多没多久就是
 文件的重新载入。也就是queue还是不够大。6， num_workers我居然只设置了1，但是为什么跑的时候好像不是1呢？看起来是有些测试的东西没删干净导致的。还是
 不对啊，到底是为什么啊？
+
+现在这一组参数，显存能接受，而且推理要快一点点，135M的参数规模，很迷。
+
+    args = {
+        "dim": 512,
+        "n_layers": 1,
+        "n_heads": 2,
+        "n_kv_heads": 2,
+        "vocab_size": 128256,
+        "multiple_of": 1024,
+        "ffn_dim_multiplier": 1.3,
+        "norm_eps": 1e-05,
+        "rope_theta": 500000.0,
+        "max_seq_len": 150,
+        "mode": "train"
+    }
+    margs = ModelArgs(**args)
+
+n_layers改成2都能运行。离谱
