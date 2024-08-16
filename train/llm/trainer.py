@@ -162,6 +162,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                     if self.amp:
                         self.scaler.scale(loss).backward()
                         if self.grad_clip is not None:
+                            self.scaler.unscale_(self.optimizer)
                             torch.nn.utils.clip_grad_norm(
                                 self.model.parameters(),
                                 self.grad_clip
