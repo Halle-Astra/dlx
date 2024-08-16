@@ -131,6 +131,8 @@ class AutoRegressiveTrainer(BaseTrainer):
         info_string = sep.join(info_string)
         logger.info(info_string)
 
+
+
     def start(self):
         valid_batch_nums = 0
         _time_mem = {'batch_cost': []}
@@ -144,7 +146,8 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 torch.cuda.synchronize()
                 _time_got_batch = time.time()
-                logger.debug(f'the shape of input_x is {input_x.shape}')
+                logger.debug(f'cost of catching batch: {_time_got_batch - _time_wait_batch}')
+                # logger.debug(f'the shape of input_x is {input_x.shape}')
 
                 if not self.amp:
                     output = self.model(input_x, **other_args)
@@ -163,19 +166,13 @@ class AutoRegressiveTrainer(BaseTrainer):
                         self.scaler.scale(loss).backward()
                         if self.grad_clip is not None:
                             self.scaler.unscale_(self.optimizer)
-                            torch.nn.utils.clip_grad_norm(
-                                self.model.parameters(),
-                                self.grad_clip
-                            )
+                            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.grad_clip)
                         self.scaler.step(self.optimizer)
                         self.scaler.update()
                     else:
                         loss.backward()
                         if self.grad_clip is not None:
-                            torch.nn.utils.clip_grad_norm(
-                                self.model.parameters(),
-                                self.grad_clip
-                            )
+                            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.grad_clip)
                         self.optimizer.step()
 
                     valid_batch_nums += 1
