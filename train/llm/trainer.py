@@ -60,7 +60,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                  device='cuda',
                  dtype=torch.float16,
                  parallel=None,
-                 grad_clip=None,
+                 grad_clip: float = None,
                  start_step=0,
                  save_folder='models_train',
                  epochs=4,
@@ -110,13 +110,15 @@ class AutoRegressiveTrainer(BaseTrainer):
                 model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
             initialize_model_parallel(model_parallel_size)
 
-    def log_training(self, train_loss, valid_batch_ratio, batch_cost):
+    def log_training(self, train_loss, valid_batch_ratio=None, batch_cost=None):
         info_string = [];
         sep = ' | '
         info_string.append(f'step: {self.cur_step}')
         info_string.append(f'loss: {train_loss}')
-        info_string.append(f'ratio of valid batches: {valid_batch_ratio*100}%')
-        info_string.append('waiting batch: {:.3f}s'.format(sum(batch_cost)/len(batch_cost)))
+        info_string.append(
+            f'ratio of valid batches: {valid_batch_ratio*100}%') if valid_batch_ratio is not None else ...
+        info_string.append(
+            'waiting batch: {:.3f}s'.format(sum(batch_cost)/len(batch_cost))) if batch_cost is not None else ...
         info_string = sep.join(info_string)
         logger.info(info_string)
 
@@ -127,6 +129,7 @@ class AutoRegressiveTrainer(BaseTrainer):
             _time_wait_batch = time.time()
             for i, batch in enumerate(self.dataloader):
                 # self.step += 1
+                torch.cuda.synchronize()
                 _time_got_batch = time.time()
                 input_x, label, other_args = batch
                 input_x = input_x.to(self.device)
@@ -156,7 +159,7 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 # log training states
                 if self.cur_step % self.train_log_iters == 0:
-                    valid_batch_ratio = valid_batch_nums / self.train_log_iters
+                    valid_batch_ratio = valid_batch_nums / self.train_log_iters if self.cur_step > 0 else None
                     self.log_training(loss.item(), valid_batch_ratio, _time_mem['batch_cost'])
                     valid_batch_nums = 0
 
@@ -174,6 +177,7 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 self.cur_step += 1
 
+                torch.cuda.synchronize()
                 _time_wait_batch = time.time()
 
             self.save(loss, eval_loss)
