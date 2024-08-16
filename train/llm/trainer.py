@@ -70,7 +70,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                  save_iters=2000,
                  eval_dataloader=None,
                  amp=False,
-                 accumulate_iters=20):
+                 accumulate_iters=4):
         """
 
         :param model:
