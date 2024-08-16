@@ -158,7 +158,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                 label = label.to(self.device)
 
                 _time_got_batch = timer.mark()
-                logger.debug(f'cost of catching batch: {_time_got_batch - _time_wait_batch}s')
+                logger.debug(f'{self.cur_step}, cost of catching batch: {_time_got_batch - _time_wait_batch}s')
                 # logger.debug(f'the shape of input_x is {input_x.shape}')
 
                 if not self.amp:

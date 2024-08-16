@@ -99,28 +99,34 @@ class Attention(nn.Module):
         self.head_dim = args.dim // args.n_heads
         self.args = args
 
-        self.wq = ColumnParallelLinear(
+        wq_linear = nn.Linear if model_parallel_size == 1 else ColumnParallelLinear
+        wk_linear = nn.Linear if model_parallel_size == 1 else ColumnParallelLinear
+        wv_linear = nn.Linear if model_parallel_size == 1 else ColumnParallelLinear
+        wo_linear = nn.Linear if model_parallel_size == 1 else RowParallelLinear
+
+
+        self.wq = wq_linear(
             args.dim,
             args.n_heads * self.head_dim,
             bias=False,
             gather_output=False,
             init_method=torch.nn.init.kaiming_uniform_,
         )
-        self.wk = ColumnParallelLinear(
+        self.wk = wk_linear(
             args.dim,
             self.n_kv_heads * self.head_dim,
             bias=False,
             gather_output=False,
             init_method=torch.nn.init.kaiming_uniform_,
         )
-        self.wv = ColumnParallelLinear(
+        self.wv = wv_linear(
             args.dim,
             self.n_kv_heads * self.head_dim,
             bias=False,
             gather_output=False,
             init_method=torch.nn.init.kaiming_uniform_,
         )
-        self.wo = RowParallelLinear(
+        self.wo = wo_linear(
             args.n_heads * self.head_dim,
             args.dim,
             bias=False,
