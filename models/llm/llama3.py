@@ -90,7 +90,10 @@ def repeat_kv(x: torch.Tensor, n_rep: int) -> torch.Tensor:
 
 class TempLinear(nn.Linear):
     def __init__(self, *args, **kwargs):
-        del kwargs['gather_output'], kwargs['init_method']
+        remove_keys = ['input_is_parallel', 'gather_output', 'init_method']
+        for k in remove_keys:
+            if k in kwargs:
+                del kwargs[k]
 
         super(TempLinear, self).__init__(*args, **kwargs)
         self.forward = super().forward
