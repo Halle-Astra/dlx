@@ -18,6 +18,7 @@ from typing import (
 from loguru import logger
 from dlx.utils.train import save_parameters
 from dlx.train.trainer import BaseTrainer
+from dlx.utils.time import timer
 
 
 class LossList(nn.Module):
@@ -131,7 +132,19 @@ class AutoRegressiveTrainer(BaseTrainer):
         info_string = sep.join(info_string)
         logger.info(info_string)
 
-
+    def _backward(self, loss):
+        if self.amp:
+            self.scaler.scale(loss).backward()
+            if self.grad_clip is not None:
+                self.scaler.unscale_(self.optimizer)
+                torch.nn.utils.clip_grad_norm(self.model.parameters(), self.grad_clip)
+            self.scaler.step(self.optimizer)
+            self.scaler.update()
+        else:
+            loss.backward()
+            if self.grad_clip is not None:
+                torch.nn.utils.clip_grad_norm(self.model.parameters(), self.grad_clip)
+            self.optimizer.step()
 
     def start(self):
         valid_batch_nums = 0
@@ -144,9 +157,8 @@ class AutoRegressiveTrainer(BaseTrainer):
                 input_x = input_x.to(self.device)
                 label = label.to(self.device)
 
-                torch.cuda.synchronize()
-                _time_got_batch = time.time()
-                logger.debug(f'cost of catching batch: {_time_got_batch - _time_wait_batch}')
+                _time_got_batch = timer.mark()
+                logger.debug(f'cost of catching batch: {_time_got_batch - _time_wait_batch}s')
                 # logger.debug(f'the shape of input_x is {input_x.shape}')
 
                 if not self.amp:
@@ -162,18 +174,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                 self.optimizer.zero_grad()
                 if loss > 0:
                     # loss.backward()  # retain_graph=True)
-                    if self.amp:
-                        self.scaler.scale(loss).backward()
-                        if self.grad_clip is not None:
-                            self.scaler.unscale_(self.optimizer)
-                            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.grad_clip)
-                        self.scaler.step(self.optimizer)
-                        self.scaler.update()
-                    else:
-                        loss.backward()
-                        if self.grad_clip is not None:
-                            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.grad_clip)
-                        self.optimizer.step()
+                    self._backward(loss)
 
                     valid_batch_nums += 1
 
@@ -204,8 +205,7 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 self.cur_step += 1
 
-                torch.cuda.synchronize()
-                _time_wait_batch = time.time()
+                _time_wait_batch = timer.mark()
 
             self.save(loss, eval_loss)
             self.cur_epoch += 1

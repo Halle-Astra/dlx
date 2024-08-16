@@ -16,3 +16,13 @@ https://developer.ibm.com/data/project-codenet/#get-this-dataset1
 ## 20240815
 关于当前为什么rload里不能判断workers is None，是因为dataloader.workers被赋值为None是在触发rload之后，
 因为rload载入文件比较慢，所以子程序当执行arrange_workers时，都已经是主进程给workers赋值之后了。
+
+## 20240816
+基本可以排除是dataloader的问题了。所以还是找不到速度缓慢的原因
+
+
+## 20240817
+
+1. 为以后更复杂的timer设计做准备，简化体现在llm/trainer.py中
+2. ~~初步简化llama3的代码，方便分析训练llama3时为什么显卡占用率这么低~~
+2. 测试一下原版llama3的行列并行Linear层的加速效果
