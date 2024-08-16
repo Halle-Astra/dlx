@@ -116,7 +116,8 @@ class AutoRegressiveTrainer(BaseTrainer):
         info_string.append(f'step: {self.cur_step}')
         info_string.append(f'loss: {train_loss}')
         info_string.append(
-            f'ratio of valid batches: {valid_batch_ratio*100}%') if valid_batch_ratio is not None else ...
+            f'ratio of valid batches: {valid_batch_ratio*100}%'
+        ) if valid_batch_ratio is not None else ...
         info_string.append(
             'max waiting batch: {:.3f}s'.format(
                 max(batch_cost)
@@ -133,11 +134,13 @@ class AutoRegressiveTrainer(BaseTrainer):
             _time_wait_batch = time.time()
             for i, batch in enumerate(self.dataloader):
                 # self.step += 1
-                torch.cuda.synchronize()
-                _time_got_batch = time.time()
                 input_x, label, other_args = batch
                 input_x = input_x.to(self.device)
                 label = label.to(self.device)
+
+                torch.cuda.synchronize()
+                _time_got_batch = time.time()
+                logger.debug(f'the shape of input_x is {input_x.shape}')
 
                 output = self.model(input_x, **other_args)
                 loss = self.loss_module(output, label)
@@ -166,6 +169,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                     valid_batch_ratio = valid_batch_nums / self.train_log_iters if self.cur_step > 0 else None
                     self.log_training(loss.item(), valid_batch_ratio, _time_mem['batch_cost'])
                     valid_batch_nums = 0
+                    _time_mem['batch_cost'].clear()
 
 
                 # log evaluating states

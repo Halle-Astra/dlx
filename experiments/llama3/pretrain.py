@@ -19,8 +19,8 @@ from dlx.utils.data.nlp.file_segments_dataloader import FileSegmentsDataloader
 from dlx.utils.stat import stat_parameters_num
 from loguru import logger
 import sys
-logger.remove()
-logger.add(sys.stderr, level='INFO')
+# logger.remove()
+# logger.add(sys.stderr, level='INFO')
 
 # torch.autograd.set_detect_anomaly(True)
 
