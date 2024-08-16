@@ -128,7 +128,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                 max(batch_cost)
                 # sum(batch_cost)/len(batch_cost))
             )
-        ) if batch_cost is not None else ...
+        ) if batch_cost is not None and batch_cost else ...
         info_string = sep.join(info_string)
         logger.info(info_string)
 
