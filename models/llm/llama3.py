@@ -321,7 +321,7 @@ class Transformer(nn.Module):
 
         model_parallel_size = fs_init.get_model_parallel_world_size()
         embedding_layer = TempEmbedding if model_parallel_size == 1 else VocabParallelEmbedding
-        output_linear = nn.Linear if model_parallel_size == 1 else ColumnParallelLinear
+        output_linear = TempLinear if model_parallel_size == 1 else ColumnParallelLinear
 
         self.tok_embeddings = embedding_layer(
             params.vocab_size, params.dim, init_method=torch.nn.init.kaiming_uniform_
