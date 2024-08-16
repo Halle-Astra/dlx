@@ -99,7 +99,7 @@ if __name__ == '__main__':
         optimizer=optimizer,
         world_size=2, tokenizer=tokenizer,
         model_is_kv_cache_enabled=False,
-        dtype=torch.long, parallel='ddp',
+        ids_dtype=torch.long, parallel='ddp',
         grad_clip=None, device='cuda',
         amp=True
     )
