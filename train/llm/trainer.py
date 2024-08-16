@@ -44,7 +44,7 @@ class DefaultGenerativeLoss(nn.Module):
     def forward(self, output, label):
         output = output[:, :-1]
         bs, seq_length, vocab_size = output.shape
-        output = output.reshape(-1, vocab_size)
+        output = output.view(-1, vocab_size)
         loss = self.ce_loss(output, label)
         if torch.isnan(loss):
             loss = 0
