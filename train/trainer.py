@@ -19,13 +19,18 @@ class BaseTrainer:
 
         def _save(folder_name):
             folder = os.path.join(self.save_folder, folder_name)
+            if isinstance(self.model, DDP):
+                model_state_dict = self.model.module.state_dict(),
+            else:
+                model_state_dict = self.model.state_dict()
+
             others = dict(cur_step=self.cur_step,
                           cur_epoch=self.cur_epoch,
                           loss=train_loss,
                           eval_loss=eval_loss)
             save_parameters(
                 folder,
-                self.model.state_dict(),
+                model_state_dict,
                 self.optimizer.state_dict(),
                 others
             )

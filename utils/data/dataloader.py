@@ -81,7 +81,7 @@ def default_generate_batch(dataloader_instance, collate_fn=None):
 class Dataloader(BaseWatcherThread):
     def __init__(self,
                  dataset,
-                 queue_size=2000,
+                 queue_size=100000,
                  batch_size=4,
                  steps=250000,
                  num_worker=8,
