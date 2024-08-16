@@ -14,7 +14,7 @@ from loguru import logger
 
 class FileSegmentsDataloader(Dataloader):
     def __init__(self, dataset_instance,
-                 change_file_iters=100000,
+                 change_file_iters=10000000,
                  queue_size=100000,
                  batch_size=4,
                  steps=250000,
