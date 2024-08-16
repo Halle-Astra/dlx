@@ -305,6 +305,12 @@ class TransformerBlock(nn.Module):
         out = h + self.feed_forward(self.ffn_norm(h))
         return out
 
+class TempEmbedding(nn.Embedding):
+    def __init__(self, *args, **kwargs):
+        if 'init_method' in kwargs:
+            del kwargs['init_method']
+        super(TempEmbedding, self).__init__(*args, **kwargs)
+
 
 class Transformer(nn.Module):
     def __init__(self, params: ModelArgs):
@@ -314,7 +320,7 @@ class Transformer(nn.Module):
         self.n_layers = params.n_layers
 
         model_parallel_size = fs_init.get_model_parallel_world_size()
-        embedding_layer = torch.nn.Embedding if model_parallel_size == 1 else VocabParallelEmbedding
+        embedding_layer = TempEmbedding if model_parallel_size == 1 else VocabParallelEmbedding
         output_linear = nn.Linear if model_parallel_size == 1 else ColumnParallelLinear
 
         self.tok_embeddings = embedding_layer(
