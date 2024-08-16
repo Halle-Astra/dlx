@@ -20,7 +20,7 @@ from dlx.utils.stat import stat_parameters_num
 from loguru import logger
 import sys
 logger.remove()
-logger.add(sys.stderr, leval='INFO')
+logger.add(sys.stderr, level='INFO')
 
 # torch.autograd.set_detect_anomaly(True)
 
