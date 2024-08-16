@@ -118,7 +118,11 @@ class AutoRegressiveTrainer(BaseTrainer):
         info_string.append(
             f'ratio of valid batches: {valid_batch_ratio*100}%') if valid_batch_ratio is not None else ...
         info_string.append(
-            'waiting batch: {:.3f}s'.format(sum(batch_cost)/len(batch_cost))) if batch_cost is not None else ...
+            'max waiting batch: {:.3f}s'.format(
+                max(batch_cost)
+                # sum(batch_cost)/len(batch_cost))
+            )
+        ) if batch_cost is not None else ...
         info_string = sep.join(info_string)
         logger.info(info_string)
 
