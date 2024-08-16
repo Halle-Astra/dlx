@@ -67,10 +67,11 @@ class AutoRegressiveTrainer(BaseTrainer):
                  epochs=4,
                  train_log_iters=200,
                  eval_log_iters=200,
+                 accumulate_iters=1,
                  save_iters=2000,
                  eval_dataloader=None,
                  amp=False,
-                 accumulate_iters=4):
+                 ):
         """
 
         :param model:

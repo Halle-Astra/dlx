@@ -257,13 +257,18 @@ class FeedForward(nn.Module):
             hidden_dim = int(ffn_dim_multiplier * hidden_dim)
         hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
 
-        self.w1 = ColumnParallelLinear(
+        model_parallel_size = fs_init.get_model_parallel_world_size()
+        w1_linear = TempLinear if model_parallel_size == 1 else ColumnParallelLinear
+        w2_linear = TempLinear if model_parallel_size == 1 else RowParallelLinear
+        w3_linear = TempLinear if model_parallel_size == 1 else ColumnParallelLinear
+
+        self.w1 = w1_linear(
             dim, hidden_dim, bias=False, gather_output=False, init_method=torch.nn.init.kaiming_uniform_
         )
-        self.w2 = RowParallelLinear(
+        self.w2 = w2_linear(
             hidden_dim, dim, bias=False, input_is_parallel=True, init_method=torch.nn.init.kaiming_uniform_
         )
-        self.w3 = ColumnParallelLinear(
+        self.w3 = w3_linear(
             dim, hidden_dim, bias=False, gather_output=False, init_method=torch.nn.init.kaiming_uniform_
         )
 
