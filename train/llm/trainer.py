@@ -112,16 +112,17 @@ class AutoRegressiveTrainer(BaseTrainer):
             self.scaler = GradScaler()
 
     def init_parallel(self, model_parallel_size=None):
-        torch.cuda.set_device(dist.get_rank())
-        model_parallel_size = self.world_size if model_parallel_size is None else model_parallel_size
-        if not torch.distributed.is_initialized():
-            torch.distributed.init_process_group("nccl")
-        if not model_parallel_is_initialized():
-            if model_parallel_size is None:
-                model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
-            initialize_model_parallel(model_parallel_size)
-
         if self.world_size > 1:
+            torch.cuda.set_device(dist.get_rank())
+            model_parallel_size = self.world_size if model_parallel_size is None else model_parallel_size
+            if not torch.distributed.is_initialized():
+                torch.distributed.init_process_group("nccl")
+            if not model_parallel_is_initialized():
+                if model_parallel_size is None:
+                    model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
+                initialize_model_parallel(model_parallel_size)
+
+            # if self.world_size > 1:
             self.model = DDP(self.model)
 
 
