@@ -177,5 +177,5 @@ n_layers改成2都能运行。离谱.
     
 
 
-有没有一种可能，是因为loss_module因为继承自nn.Module所以必须要加上.to(device)呢？
+有没有一种可能，是因为loss_module因为继承自nn.Module所以必须要加上.to(device)呢？(**也不对！**)
 

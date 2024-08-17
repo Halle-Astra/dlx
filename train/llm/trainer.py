@@ -230,6 +230,6 @@ class AutoRegressiveTrainer(BaseTrainer):
                 self.cur_step += 1
 
                 _time_wait_batch = timer.mark()
-
+                logger.debug(f'total cost time: {_time_wait_batch - _time_got_batch}')
             self.save(loss, eval_loss)
             self.cur_epoch += 1
