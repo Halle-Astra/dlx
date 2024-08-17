@@ -89,7 +89,6 @@ class AutoRegressiveTrainer(BaseTrainer):
         if isinstance(loss_module, list):
             loss_module = LossList(loss_module)
 
-        self.init_parallel(model_parallel_size)
         self.loss_module = loss_module
         self.optimizer = optimizer
         self.tokenizer = tokenizer
@@ -110,6 +109,9 @@ class AutoRegressiveTrainer(BaseTrainer):
 
         if amp:
             self.scaler = GradScaler()
+
+        self.init_parallel(model_parallel_size)
+
 
     def init_parallel(self, model_parallel_size=None):
         if self.world_size > 1:
