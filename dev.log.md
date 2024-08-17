@@ -72,3 +72,25 @@ n_layers改成2都能运行。离谱.
         "max_seq_len": 150,
         "mode": "train"
     }
+
+耗时分析如下：（总之问题还是不在这）
+
+    2024-08-17 16:30:33.446 | INFO     | dlx.utils.stat:stat_parameters_num:24 - trainable params: 164.897M
+    2024-08-17 16:30:33.447 | INFO     | dlx.utils.stat:stat_parameters_num:25 - untrainable params: 0.000K
+    2024-08-17 16:30:33.449 | INFO     | dlx.utils.stat:stat_parameters_num:26 - total params: 164.897M
+    2024-08-17 16:30:35.641 | DEBUG    | dlx.train.llm.trainer:start:166 - 0, cost of catching batch: 0.0032465457916259766s
+    2024-08-17 16:30:35.820 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.08592987060546875
+    2024-08-17 16:30:41.626 | DEBUG    | dlx.train.llm.trainer:start:177 - cost of forward :5.985889673233032
+    2024-08-17 16:30:50.039 | DEBUG    | dlx.train.llm.trainer:start:189 - cost of backward: 8.41292119026184
+    2024-08-17 16:30:50.045 | INFO     | dlx.train.llm.trainer:log_training:137 - step: 0 | loss: 11.928168296813965 | max waiting batch: 0.003s
+    2024-08-17 16:30:50.056 | DEBUG    | dlx.train.llm.trainer:start:166 - 1, cost of catching batch: 0.010938167572021484s
+    2024-08-17 16:30:50.111 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.027195215225219727
+    2024-08-17 16:30:52.602 | DEBUG    | dlx.train.llm.trainer:start:177 - cost of forward :2.545494556427002
+    2024-08-17 16:30:57.480 | DEBUG    | dlx.train.llm.trainer:start:189 - cost of backward: 4.878072023391724
+    2024-08-17 16:30:57.491 | DEBUG    | dlx.train.llm.trainer:start:166 - 2, cost of catching batch: 0.010713577270507812s
+    2024-08-17 16:30:57.545 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.026389360427856445
+    2024-08-17 16:31:00.077 | DEBUG    | dlx.train.llm.trainer:start:177 - cost of forward :2.5858421325683594
+    2024-08-17 16:31:05.031 | DEBUG    | dlx.train.llm.trainer:start:189 - cost of backward: 4.954129457473755
+    2024-08-17 16:31:05.048 | DEBUG    | dlx.train.llm.trainer:start:166 - 3, cost of catching batch: 0.01584458351135254s
+
+继续分析是不是DDP在每次backward之后都要多卡同步一下导致的。

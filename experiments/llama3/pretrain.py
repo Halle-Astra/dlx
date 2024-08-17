@@ -86,7 +86,7 @@ if __name__ == '__main__':
     #     te_weight = {'tok_embeddings.weight': weights}
     model = Transformer(margs).cuda()
     # model.load_state_dict(weights)
-    model = DDP(model, broadcast_buffers=False)
+    # model = DDP(model, broadcast_buffers=False)
     stat_parameters_num(model)
 
 
