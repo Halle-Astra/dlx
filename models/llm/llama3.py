@@ -259,7 +259,7 @@ class FeedForward(nn.Module):
             hidden_dim = int(ffn_dim_multiplier * hidden_dim)
         hidden_dim = multiple_of * ((hidden_dim + multiple_of - 1) // multiple_of)
 
-        model_parallel_size = fs_init.get_model_parallel_world_size()
+        model_parallel_size = fs_init.get_model_parallel_world_size() if torch.distributed.is_initialized() else 1
         w1_linear = TempLinear if model_parallel_size == 1 else ColumnParallelLinear
         w2_linear = TempLinear if model_parallel_size == 1 else RowParallelLinear
         w3_linear = TempLinear if model_parallel_size == 1 else ColumnParallelLinear
