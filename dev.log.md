@@ -118,3 +118,30 @@ n_layers改成2都能运行。离谱.
     2024-08-17 16:58:49.837 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.03143954277038574
     2024-08-17 16:58:52.480 | DEBUG    | dlx.train.llm.trainer:start:186 - cost of forward :2.6865458488464355
     2024-08-17 16:58:57.473 | DEBUG    | dlx.train.llm.trainer:start:198 - cost of backward: 4.9930174350738525
+
+
+服了，真服了，也不是这个原因，直接删了加rope的代码，然后还是没区别
+
+    2024-08-17 17:07:09.590 | INFO     | dlx.utils.stat:stat_parameters_num:24 - trainable params: 164.897M
+    2024-08-17 17:07:09.591 | INFO     | dlx.utils.stat:stat_parameters_num:25 - untrainable params: 0.000K
+    2024-08-17 17:07:09.592 | INFO     | dlx.utils.stat:stat_parameters_num:26 - total params: 164.897M
+    2024-08-17 17:07:11.397 | DEBUG    | dlx.train.llm.trainer:start:175 - 0, cost of catching batch: 0.00875711441040039s
+    2024-08-17 17:07:11.456 | DEBUG    | dlx.models.llm.llama3:forward:368 - time of generate mask: 0.010188102722167969
+    2024-08-17 17:07:15.569 | DEBUG    | dlx.train.llm.trainer:start:186 - cost of forward :4.171674013137817
+    2024-08-17 17:07:26.454 | DEBUG    | dlx.train.llm.trainer:start:198 - cost of backward: 10.885590553283691
+    2024-08-17 17:07:26.460 | INFO     | dlx.train.llm.trainer:log_training:146 - step: 0 | loss: 11.937785148620605 | max waiting batch: 0.009s
+    2024-08-17 17:07:26.478 | DEBUG    | dlx.train.llm.trainer:start:175 - 1, cost of catching batch: 0.012222766876220703s
+    2024-08-17 17:07:26.516 | DEBUG    | dlx.models.llm.llama3:forward:368 - time of generate mask: 0.026329755783081055
+    2024-08-17 17:07:28.590 | DEBUG    | dlx.train.llm.trainer:start:186 - cost of forward :2.112217903137207
+    2024-08-17 17:07:33.503 | DEBUG    | dlx.train.llm.trainer:start:198 - cost of backward: 4.91229772567749
+    2024-08-17 17:07:33.519 | DEBUG    | dlx.train.llm.trainer:start:175 - 2, cost of catching batch: 0.015867948532104492s
+    2024-08-17 17:07:33.562 | DEBUG    | dlx.models.llm.llama3:forward:368 - time of generate mask: 0.031778573989868164
+    2024-08-17 17:07:35.628 | DEBUG    | dlx.train.llm.trainer:start:186 - cost of forward :2.109123468399048
+    2024-08-17 17:07:40.450 | DEBUG    | dlx.train.llm.trainer:start:198 - cost of backward: 4.821685314178467
+    2024-08-17 17:07:40.472 | DEBUG    | dlx.train.llm.trainer:start:175 - 3, cost of catching batch: 0.010674476623535156s
+    2024-08-17 17:07:40.509 | DEBUG    | dlx.models.llm.llama3:forward:368 - time of generate mask: 0.02675938606262207
+    2024-08-17 17:07:42.613 | DEBUG    | dlx.train.llm.trainer:start:186 - cost of forward :2.1410765647888184
+    2024-08-17 17:07:47.453 | DEBUG    | dlx.train.llm.trainer:start:198 - cost of backward: 4.8405561447143555
+    2024-08-17 17:07:47.482 | DEBUG    | dlx.train.llm.trainer:start:175 - 4, cost of catching batch: 0.023192882537841797s
+    2024-08-17 17:07:47.520 | DEBUG    | dlx.models.llm.llama3:forward:368 - time of generate mask: 0.021424531936645508
+    2024-08-17 17:07:49.535 | DEBUG    | dlx.train.llm.trainer:start:186 - cost of forward :2.0527472496032715

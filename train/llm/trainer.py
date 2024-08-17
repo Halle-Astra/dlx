@@ -154,10 +154,15 @@ class AutoRegressiveTrainer(BaseTrainer):
             self.scaler.step(self.optimizer)
             self.scaler.update()
         else:
+            _time_begin_compute_grad = timer.mark()
             loss.backward()
+            _time_end_compute_grad = timer.mark()
+            logger.debug(f'time of grad cal: {_time_end_compute_grad - _time_begin_compute_grad}')
             if self.grad_clip is not None:
                 torch.nn.utils.clip_grad_norm(self.model.parameters(), self.grad_clip)
             self.optimizer.step()
+            _time_end_optimizer = timer.mark()
+            logger.debug(f'time of optim: {_time_end_optimizer - _time_end_compute_grad}')
 
     def start(self):
         valid_batch_nums = 0
