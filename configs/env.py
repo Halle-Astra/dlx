@@ -1,9 +1,8 @@
 import os
+import sys
 
-USER_HOME = os.environ.get(
-    'HOME',  # for linxu
-    os.path.join('C:', os.environ.get('HOMEPATH')),  # for windows
-    )
+homepath_name = 'HOME' if sys.platform == 'linux' else 'HOMEPATH'
+USER_HOME = os.environ.get(homepath_name, '.')
 DEFAULT_ENVS = dict(
     DLX_HOME=os.path.join(USER_HOME, '.cache/dlx')
 )
