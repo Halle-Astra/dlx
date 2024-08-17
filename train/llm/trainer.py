@@ -45,6 +45,8 @@ class DefaultGenerativeLoss(nn.Module):
         output = output[:, :-1]
         bs, seq_length, vocab_size = output.shape
         output = output.contiguous().view(-1, vocab_size)
+        logger.debug('shape, dtype of output: {}, {}'.format(output.shape, output.dtype))
+        logger.debug('shape, dtype of label: {}, {}'.format(label.shape, label.dtype))
         loss = self.ce_loss(output, label)
         if torch.isnan(loss):
             loss = 0
