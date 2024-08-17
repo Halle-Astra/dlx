@@ -89,7 +89,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         if isinstance(loss_module, list):
             loss_module = LossList(loss_module)
 
-        self.loss_module = loss_module
+        self.loss_module = loss_module.to(self.device)
         self.optimizer = optimizer
         self.tokenizer = tokenizer
         self.device = device

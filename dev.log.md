@@ -145,3 +145,37 @@ n_layers改成2都能运行。离谱.
     2024-08-17 17:07:47.482 | DEBUG    | dlx.train.llm.trainer:start:175 - 4, cost of catching batch: 0.023192882537841797s
     2024-08-17 17:07:47.520 | DEBUG    | dlx.models.llm.llama3:forward:368 - time of generate mask: 0.021424531936645508
     2024-08-17 17:07:49.535 | DEBUG    | dlx.train.llm.trainer:start:186 - cost of forward :2.0527472496032715
+
+关于backward阶段的耗时：
+    
+    2024-08-17 17:18:15.062 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.026854276657104492
+    2024-08-17 17:18:17.703 | DEBUG    | dlx.train.llm.trainer:start:191 - cost of forward :2.689047336578369
+    2024-08-17 17:18:19.216 | DEBUG    | dlx.train.llm.trainer:_backward:160 - time of grad cal: 1.0575227737426758
+    2024-08-17 17:18:22.624 | DEBUG    | dlx.train.llm.trainer:_backward:165 - time of optim: 3.4075379371643066
+    2024-08-17 17:18:22.624 | DEBUG    | dlx.train.llm.trainer:start:203 - cost of backward: 4.921015024185181
+    2024-08-17 17:18:22.641 | DEBUG    | dlx.train.llm.trainer:start:180 - 27, cost of catching batch: 0.010694742202758789s
+    2024-08-17 17:18:22.676 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.03471970558166504
+    2024-08-17 17:18:25.195 | DEBUG    | dlx.train.llm.trainer:start:191 - cost of forward :2.5543599128723145
+    2024-08-17 17:18:26.771 | DEBUG    | dlx.train.llm.trainer:_backward:160 - time of grad cal: 1.0742831230163574
+    2024-08-17 17:18:30.272 | DEBUG    | dlx.train.llm.trainer:_backward:165 - time of optim: 3.500648021697998
+    2024-08-17 17:18:30.272 | DEBUG    | dlx.train.llm.trainer:start:203 - cost of backward: 5.077411651611328
+    2024-08-17 17:18:30.284 | DEBUG    | dlx.train.llm.trainer:start:180 - 28, cost of catching batch: 0.010411262512207031s
+    2024-08-17 17:18:30.322 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.026834487915039062
+    2024-08-17 17:18:32.790 | DEBUG    | dlx.train.llm.trainer:start:191 - cost of forward :2.5066637992858887
+    2024-08-17 17:18:34.406 | DEBUG    | dlx.train.llm.trainer:_backward:160 - time of grad cal: 1.1225650310516357
+    2024-08-17 17:18:37.812 | DEBUG    | dlx.train.llm.trainer:_backward:165 - time of optim: 3.4059510231018066
+    2024-08-17 17:18:37.818 | DEBUG    | dlx.train.llm.trainer:start:203 - cost of backward: 5.027588367462158
+    2024-08-17 17:18:37.829 | DEBUG    | dlx.train.llm.trainer:start:180 - 29, cost of catching batch: 0.010773181915283203s
+    2024-08-17 17:18:37.872 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.037316083908081055
+    2024-08-17 17:18:40.318 | DEBUG    | dlx.train.llm.trainer:start:191 - cost of forward :2.4893863201141357
+    2024-08-17 17:18:41.944 | DEBUG    | dlx.train.llm.trainer:_backward:160 - time of grad cal: 1.125314474105835
+    2024-08-17 17:18:45.370 | DEBUG    | dlx.train.llm.trainer:_backward:165 - time of optim: 3.4260201454162598
+    2024-08-17 17:18:45.371 | DEBUG    | dlx.train.llm.trainer:start:203 - cost of backward: 5.052683591842651
+    2024-08-17 17:18:45.382 | DEBUG    | dlx.train.llm.trainer:start:180 - 30, cost of catching batch: 0.010607719421386719s
+    2024-08-17 17:18:45.420 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.02653646469116211
+    2024-08-17 17:18:47.987 | DEBUG    | dlx.train.llm.trainer:start:191 - cost of forward :2.6052064895629883
+    
+
+
+有没有一种可能，是因为loss_module因为继承自nn.Module所以必须要加上.to(device)呢？
+
