@@ -16,7 +16,7 @@ class Transformer(nn.Module):
         self.linear = nn.Linear(d_model, d_output)
         self.softmax = nn.Softmax(dim=-1)
 
-    def forward(self, embeddings):
+    def forward(self, embeddings, *args, **kwargs):
         memory = self.encoder(embeddings)
         for layer in self.decoder:
             embeddings = layer(embeddings, memory)
