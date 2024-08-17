@@ -69,7 +69,7 @@ if __name__ == '__main__':
     args = get_args()
 
     # ddp setting
-    init_parallel(args.model_parallel_size)
+    # init_parallel(args.model_parallel_size)
 
     # tokenizer
     tokenizer = Tokenizer()
