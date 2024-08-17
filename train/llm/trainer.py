@@ -163,7 +163,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                 label = label.to(self.device)
 
                 _time_got_batch = timer.mark()
-                # logger.debug(f'{self.cur_step}, cost of catching batch: {_time_got_batch - _time_wait_batch}s')
+                logger.debug(f'{self.cur_step}, cost of catching batch: {_time_got_batch - _time_wait_batch}s')
                 # logger.debug(f'the shape of input_x is {input_x.shape}')
 
                 if not self.amp:
@@ -192,7 +192,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                     self.model.module.reset_kv_cache()
 
                 # other minor operations
-                # _time_mem['batch_cost'].append(_time_got_batch - _time_wait_batch)
+                _time_mem['batch_cost'].append(_time_got_batch - _time_wait_batch)
 
                 # log training states
                 if self.cur_step % self.train_log_iters == 0:
@@ -215,7 +215,7 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 self.cur_step += 1
 
-                # _time_wait_batch = timer.mark()
+                _time_wait_batch = timer.mark()
 
             self.save(loss, eval_loss)
             self.cur_epoch += 1
