@@ -179,3 +179,16 @@ n_layers改成2都能运行。离谱.
 
 有没有一种可能，是因为loss_module因为继承自nn.Module所以必须要加上.to(device)呢？(**也不对！**)
 
+为了排除是pytorch版本问题，现在搞个新的容器
+
+    docker run -itd \
+            --gpus 1 \
+            --name dlx \
+            -v /home/halle/data/programs/LLMs:/workspace \
+            -v /media/halle/GTA/data/llms/WuDaoCorpus2.0_base_200G:/dataset/fd5061f6/chinese_data/WuDao \
+            --net host \
+            ubuntu
+
+试过了，也不是，麻了，只能对比对比别人的了，找不到原因反正。要不就onnx导出分析分析。
+
+

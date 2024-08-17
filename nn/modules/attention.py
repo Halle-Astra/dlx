@@ -2,6 +2,10 @@ from torch import nn
 import torch
 from torch.nn.parameter import Parameter
 import torch.nn.functional as F
+if not hasattr(torch, 'concat'):
+    torch.concat = torch.cat
+if not hasattr(torch, 'inf'):
+    torch.inf = torch.tensor(float('inf'))
 
 
 class SelfAttention(nn.Module):
@@ -51,7 +55,7 @@ class ScaledDotProductAttention(nn.Module):
         self.diagnol = diagnol
 
     def forward(self, Q, K, V):
-        sim = torch.matmul(Q, torch.permute(K, (0, 2, 1)))
+        sim = torch.matmul(Q, K.permute((0, 2, 1)))  # torch.permute(K, (0, 2, 1)))
         sim = sim / self.d_k ** 0.5
         if self.mask:
             mask = get_mask(Q.shape[1], self.diagnol, Q.dtype)
