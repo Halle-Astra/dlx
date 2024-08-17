@@ -59,7 +59,7 @@ class ScaledDotProductAttention(nn.Module):
         sim = sim / self.d_k ** 0.5
         if self.mask:
             mask = get_mask(Q.shape[1], self.diagnol, Q.dtype)
-            sim = sim + mask
+            sim = sim + mask.to(sim)
 
         weights = F.softmax(sim, dim=-1)
         output = torch.matmul(weights, V)

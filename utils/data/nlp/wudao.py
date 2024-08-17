@@ -33,7 +33,7 @@ class WuDao:
             input_ndarray[i, :b_lengths[i]] = batch[i]
 
         input_x = torch.tensor(input_ndarray, dtype=self.dtype)  # .to(self.device)
-        input_y = input_x[:, 1:]
+        input_y = input_x[:, 1:].float()
         input_y = input_y.flatten()
 
         return [input_x, input_y, {'start_pos': 0}]
