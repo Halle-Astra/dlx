@@ -94,3 +94,27 @@ n_layers改成2都能运行。离谱.
     2024-08-17 16:31:05.048 | DEBUG    | dlx.train.llm.trainer:start:166 - 3, cost of catching batch: 0.01584458351135254s
 
 继续分析是不是DDP在每次backward之后都要多卡同步一下导致的。
+
+
+还是不行，也不是DDP的问题，可能是llama3的复数ROPE实现导致的吧，真是迷惑，下次用我自己实现的Transformer来做吧，不知道了。
+
+    2024-08-17 16:58:18.485 | INFO     | dlx.utils.stat:stat_parameters_num:24 - trainable params: 164.897M
+    2024-08-17 16:58:18.497 | INFO     | dlx.utils.stat:stat_parameters_num:25 - untrainable params: 0.000K
+    2024-08-17 16:58:18.502 | INFO     | dlx.utils.stat:stat_parameters_num:26 - total params: 164.897M
+    2024-08-17 16:58:20.404 | DEBUG    | dlx.train.llm.trainer:start:175 - 0, cost of catching batch: 0.008106231689453125s
+    2024-08-17 16:58:20.447 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.030376434326171875
+    2024-08-17 16:58:27.719 | DEBUG    | dlx.train.llm.trainer:start:186 - cost of forward :7.315085172653198
+    2024-08-17 16:58:34.419 | DEBUG    | dlx.train.llm.trainer:start:198 - cost of backward: 6.699707746505737
+    2024-08-17 16:58:34.430 | INFO     | dlx.train.llm.trainer:log_training:146 - step: 0 | loss: 11.941049575805664 | max waiting batch: 0.008s
+    2024-08-17 16:58:34.441 | DEBUG    | dlx.train.llm.trainer:start:175 - 1, cost of catching batch: 0.010625123977661133s
+    2024-08-17 16:58:34.473 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.026329517364501953
+    2024-08-17 16:58:37.000 | DEBUG    | dlx.train.llm.trainer:start:186 - cost of forward :2.5587728023529053
+    2024-08-17 16:58:42.003 | DEBUG    | dlx.train.llm.trainer:start:198 - cost of backward: 5.003100395202637
+    2024-08-17 16:58:42.020 | DEBUG    | dlx.train.llm.trainer:start:175 - 2, cost of catching batch: 0.010692834854125977s
+    2024-08-17 16:58:42.052 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.02658534049987793
+    2024-08-17 16:58:44.697 | DEBUG    | dlx.train.llm.trainer:start:186 - cost of forward :2.676975727081299
+    2024-08-17 16:58:49.781 | DEBUG    | dlx.train.llm.trainer:start:198 - cost of backward: 5.0847249031066895
+    2024-08-17 16:58:49.794 | DEBUG    | dlx.train.llm.trainer:start:175 - 3, cost of catching batch: 0.011670589447021484s
+    2024-08-17 16:58:49.837 | DEBUG    | dlx.models.llm.llama3:forward:369 - time of generate mask: 0.03143954277038574
+    2024-08-17 16:58:52.480 | DEBUG    | dlx.train.llm.trainer:start:186 - cost of forward :2.6865458488464355
+    2024-08-17 16:58:57.473 | DEBUG    | dlx.train.llm.trainer:start:198 - cost of backward: 4.9930174350738525
