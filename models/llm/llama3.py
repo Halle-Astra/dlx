@@ -14,6 +14,8 @@ from fairscale.nn.model_parallel.layers import (
     VocabParallelEmbedding,
 )
 from torch import nn
+from dlx.utils.time import timer
+from loguru import logger
 
 
 @dataclass
@@ -349,6 +351,7 @@ class Transformer(nn.Module):
         self.freqs_cis = self.freqs_cis.to(h.device)
         freqs_cis = self.freqs_cis[start_pos: start_pos + seqlen]
 
+        _time_begin_generate_mask = timer.mark()
         mask = None
         if seqlen > 1:
             mask = torch.full((seqlen, seqlen), float("-inf"), device=tokens.device)
@@ -362,6 +365,8 @@ class Transformer(nn.Module):
             mask = torch.hstack(
                 [torch.zeros((seqlen, start_pos), device=tokens.device), mask]
             ).type_as(h)
+        _time_end_generate_mask = timer.mark()
+        logger.debug(f'time of generate mask: {_time_end_generate_mask - _time_begin_generate_mask}')
 
         for layer in self.layers:
             h = layer(h, start_pos, freqs_cis, mask, index_in_batch)

@@ -25,16 +25,16 @@ import sys
 # torch.autograd.set_detect_anomaly(True)
 
 args = {
-    "dim": 4,
-    "n_layers": 3,
-    "n_heads": 2,
-    "n_kv_heads": 2,
+    "dim": 512,
+    "n_layers": 8,
+    "n_heads": 1,
+    "n_kv_heads": 1,
     "vocab_size": 128256,
     "multiple_of": 1024,
     "ffn_dim_multiplier": 1.3,
     "norm_eps": 1e-05,
     "rope_theta": 500000.0,
-    "max_seq_len": 2048,
+    "max_seq_len": 150,
     "mode": "train"
 }
 margs = ModelArgs(**args)

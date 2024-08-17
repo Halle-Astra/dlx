@@ -51,4 +51,24 @@ https://developer.ibm.com/data/project-codenet/#get-this-dataset1
     }
     margs = ModelArgs(**args)
 
-n_layers改成2都能运行。离谱
+n_layers改成2都能运行。离谱.
+
+## 20240818
+
+现在开始专门的时间测速了，主要目的是验证是不是mask的生成导致的时间占用。
+
+参数：
+    
+    args = {
+        "dim": 512,
+        "n_layers": 8,
+        "n_heads": 1,
+        "n_kv_heads": 1,
+        "vocab_size": 128256,
+        "multiple_of": 1024,
+        "ffn_dim_multiplier": 1.3,
+        "norm_eps": 1e-05,
+        "rope_theta": 500000.0,
+        "max_seq_len": 150,
+        "mode": "train"
+    }
