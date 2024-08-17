@@ -89,13 +89,13 @@ class AutoRegressiveTrainer(BaseTrainer):
         if isinstance(loss_module, list):
             loss_module = LossList(loss_module)
 
-        self.loss_module = loss_module.to(self.device)
         self.optimizer = optimizer
         self.tokenizer = tokenizer
         self.device = device
         self.dtype = ids_dtype
         self.world_size = world_size
         self.grad_clip = grad_clip
+        self.loss_module = loss_module.to(self.device)
         self.model_is_kv_cache_enabled = model_is_kv_cache_enabled
         # self.step = start_step
         self.save_folder = save_folder
