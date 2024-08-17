@@ -147,12 +147,17 @@ class AutoRegressiveTrainer(BaseTrainer):
 
     def _backward(self, loss):
         if self.amp:
+            _time_begin_compute_grad = timer.mark()
             self.scaler.scale(loss).backward()
+            _time_end_compute_grad = timer.mark()
+            logger.debug(f'time of grad cal: {_time_end_compute_grad - _time_begin_compute_grad}')
             if self.grad_clip is not None:
                 self.scaler.unscale_(self.optimizer)
                 torch.nn.utils.clip_grad_norm(self.model.parameters(), self.grad_clip)
             self.scaler.step(self.optimizer)
             self.scaler.update()
+            _time_end_optimizer = timer.mark()
+            logger.debug(f'time of optim: {_time_end_optimizer - _time_end_compute_grad}')
         else:
             _time_begin_compute_grad = timer.mark()
             loss.backward()
@@ -182,16 +187,20 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 if not self.amp:
                     output = self.model(input_x, **other_args)
+                    _time_end_forward = timer.mark()
+                    logger.debug(f'cost of forward :{_time_end_forward - _time_got_batch}')
                     loss = self.loss_module(output, label)
                 else:
                     with autocast():
                         output = self.model(input_x, **other_args)
+                        _time_end_forward = timer.mark()
+                        logger.debug(f'cost of forward :{_time_end_forward - _time_got_batch}')
                         loss = self.loss_module(output, label)
                 _time_end_loss = timer.mark()
-                logger.debug(f'cost of forward :{_time_end_loss - _time_got_batch}')
+                logger.debug(f'cost of computing loss: {_time_end_loss - _time_end_forward}')
                 # print(loss.item())
 
-                valid_batch_nums += 1 if loss > 0 else ...
+                valid_batch_nums += 1 if loss > 0 else 0
                 loss_accumulated = loss + loss_accumulated
                 self.optimizer.zero_grad()
                 if self.cur_step % self.accumulate_iters == 0 and loss_accumulated > 0:
@@ -210,8 +219,12 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 # log training states
                 if self.cur_step % self.train_log_iters == 0:
+                    loss_show = None if isinstance(loss, int) else loss.item()
                     valid_batch_ratio = valid_batch_nums / self.train_log_iters if self.cur_step > 0 else None
-                    self.log_training(loss.item(), valid_batch_ratio, _time_mem['batch_cost'])
+                    self.log_training(loss_show,
+                                      valid_batch_ratio,
+                                      _time_mem['batch_cost']
+                                      )
                     valid_batch_nums = 0
                     _time_mem['batch_cost'].clear()
 

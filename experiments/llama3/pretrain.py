@@ -101,6 +101,6 @@ if __name__ == '__main__':
         model_is_kv_cache_enabled=False,
         ids_dtype=torch.long, parallel='ddp',
         grad_clip=None, device='cuda',
-        amp=False
+        amp=True
     )
     trainer.start()
