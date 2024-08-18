@@ -109,4 +109,4 @@ if __name__ == '__main__':
         profile_steps=None,
         vocab_size=margs.vocab_size,
     )
-    trainer._start_debug()
+    trainer.start()
