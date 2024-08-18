@@ -75,13 +75,13 @@ if __name__ == '__main__':
     tokenizer = Tokenizer()
 
     # dataloader
-    # wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'
-    # train_dataset = WuDao(wudao_root, tokenizer)
-    # train_dataloader = FileSegmentsDataloader(train_dataset, num_worker=24, batch_size=32,)
-    train_dataloader = ((torch.randint(100, (48, 150,), dtype=torch.long, device='cuda'),
-                        torch.randint(100, (48, 150), dtype=torch.long, device='cuda')[:,1:].flatten(),
-                         dict(start_pos=0))
-                        for i in range(100000000))
+    wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'
+    train_dataset = WuDao(wudao_root, tokenizer)
+    train_dataloader = FileSegmentsDataloader(train_dataset, num_worker=24, batch_size=32,)
+    # train_dataloader = ((torch.randint(100, (48, 150,), dtype=torch.long, device='cuda'),
+    #                     torch.randint(100, (48, 150), dtype=torch.long, device='cuda')[:,1:].flatten(),
+    #                      dict(start_pos=0))
+    #                     for i in range(100000000))
 
     # model
     # ckpt_path = '/root/.cache/dlx/Meta-Llama-3-8B-Instruct/consolidated_instruct.00.pth'

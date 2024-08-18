@@ -162,6 +162,7 @@ class Dataloader(BaseWatcherThread):
         self.generate_batch_thread.start()
 
     def __getitem__(self, *args):
+        _time_begin_getitem = time.time()
         while True:
             if self.current_step == self.steps:
                 raise StopIteration
@@ -169,6 +170,8 @@ class Dataloader(BaseWatcherThread):
                 sample = self.data_list.pop(0)
                 self.length -= 1
                 self.current_step += 1
+                _time_end_getitem = time.time()
+                logger.debug(f'the time for waiting batch: {_time_end_getitem - _time_begin_getitem}s')
                 return sample
 
     def arrange_workers(self):
