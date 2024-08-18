@@ -64,7 +64,7 @@ def default_generate_batch(dataloader_instance, collate_fn=None):
             if not dataloader_instance.data_queue.empty():
                 dataloader_instance.data_queue.get()
         else:
-            if not dataloader_instance.data_queue.empty():
+            if not dataloader_instance.length>400 and not dataloader_instance.data_queue.empty():
                 batch = []
                 for i in range(dataloader_instance.batch_size):
                     sample = dataloader_instance.data_queue.get()

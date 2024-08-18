@@ -194,4 +194,20 @@ n_layers改成2都能运行。离谱.
 终于找到原因了，就是dataloader的多线程里的while循环太容易抢到解释器锁了，然后就while循环太多了！加了time.sleep(3)给两个线程里的while部分就
 放开解释器给训练逻辑了。
 
+下面这一段，是将单精度训练下的利用率从（60-90）浮动优化为（98-99）浮动的关键（半精度则是96-97）：（目前实践下来，if和logger有点影响，不算大，大的重点还是在dataloader的多线程占用
+但是如果将下面的400改为4，就会发生严重的等待，而导致利用率又非常低。在没有4也没有400的情况下，去掉训练中的if和logger会有速度，可以将60的最低值提升到
+70甚至80，但是这不排除是因为有机会抢到解释器锁的原因，因为每次对loss.item()或其他and之类的判断，可能会因为内存的搬挪和分配host内存给临时变量
+而导致放手解释器锁，目前是这样子的猜测。因此核心还是在dataloader的问题上。）
+
+    while not dataloader_instance.watcher_exit_event.is_set():
+        if dataloader_instance.debug:
+            if not dataloader_instance.data_queue.empty():
+                dataloader_instance.data_queue.get()
+        else:
+            if not dataloader_instance.length>400 and not dataloader_instance.data_queue.empty():
+                batch = []
+                for i in range(dataloader_instance.batch_size):
+                    sample = dataloader_instance.data_queue.get()
+                    batch.append(sample)
+
 
