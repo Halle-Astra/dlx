@@ -75,6 +75,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                  amp=False,
                  model_parallel_size=None,
                  profile_dir=None,
+                 profile_steps=None,
                  ):
         """
 
@@ -110,6 +111,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         self.eval_dataloader = eval_dataloader
         self.amp = amp
         self.profile_dir = profile_dir
+        self.profile_steps = profile_steps
 
         if amp:
             self.scaler = GradScaler()
@@ -173,19 +175,28 @@ class AutoRegressiveTrainer(BaseTrainer):
             _time_end_optimizer = timer.mark()
             logger.debug(f'time of optim: {_time_end_optimizer - _time_end_compute_grad}')
 
+    def _start_without_profile(self):
+        self._start_without_profile()
+
+    def _start_with_profile(self,):
+        with torch.profiler.profile(
+                schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
+                on_trace_ready=torch.profiler.tensorboard_trace_handler(self.profile_dir),
+                record_shapes=True, profile_memory=False,
+                with_stack=True) as prof:
+            self._start_main_routine(prof)
+
     def start(self):
+        if self.profile_dir is not None and isinstance(self.profile_dir, str):
+            self._start_with_profile()
+        else:
+            self._start_without_profile()
+
+    def _start_main_routine(self, prof=None):
+        prof_stopped_flag = False
         valid_batch_nums = 0
         _time_mem = {'batch_cost': []}
         loss_accumulated = 0
-
-        prof = None
-        if self.profile_dir is not None and isinstance(self.profile_dir, str):
-            prof = torch.profiler.profile(
-                schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
-                on_trace_ready=torch.profiler.tensorboard_trace_handler(self.profile_dir),
-                record_shapes=True,
-                with_stack=True)
-            prof.start()
 
         for _e in range(self.epochs):
             _time_wait_batch = time.time()
@@ -257,8 +268,12 @@ class AutoRegressiveTrainer(BaseTrainer):
                 self.cur_step += 1
                 prof.step() if prof is not None else ...
 
+                if prof is not None and self.cur_step > self.profile_steps:
+                    prof.stop()
+                    prof_stopped_flag = True
+
                 _time_wait_batch = timer.mark()
                 logger.debug(f'total cost time: {_time_wait_batch - _time_got_batch}')
             self.save(loss, eval_loss)
             self.cur_epoch += 1
-        prof.stop() if prof is not None else ...
+        prof.stop() if prof is not None and not prof_stopped_flag else ...
