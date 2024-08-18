@@ -80,7 +80,7 @@ if __name__ == '__main__':
     # train_dataloader = FileSegmentsDataloader(train_dataset, num_worker=24, batch_size=32,)
     train_dataloader = ((torch.randint(100, (48, 150,), dtype=torch.long, device='cuda'),
                         torch.randint(100, (48, 150), dtype=torch.long, device='cuda')[:,1:].flatten(),
-                        None)
+                         dict(start_pos=0))
                         for i in range(100000000))
 
     # model
