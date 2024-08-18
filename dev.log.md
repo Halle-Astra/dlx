@@ -211,3 +211,34 @@ n_layers改成2都能运行。离谱.
                     batch.append(sample)
 
 
+## 20240817
+
+目前测试下面这种利用Event来进行线程等待的，但是实测最高显卡利用率只能在91，上限不如sleep(3)的方案。
+
+    def default_generate_batch(dataloader_instance, collate_fn=None):
+        while not dataloader_instance.watcher_exit_event.is_set():
+            if dataloader_instance.debug:
+                if not dataloader_instance.data_queue.empty():
+                    dataloader_instance.data_queue.get()
+            else:
+                if True:
+                    #logger.debug('waiting event')
+                    dataloader_instance.need_data_event.wait()
+                    #logger.debug('end waiting')
+                #if not dataloader_instance.length>400 and not dataloader_instance.data_queue.empty():
+                    batch = []
+                    for i in range(dataloader_instance.batch_size):
+                        sample = dataloader_instance.data_queue.get()
+                        batch.append(sample)
+                    if collate_fn is not None:
+                        batch = collate_fn(batch)
+                        if (batch is None) or (batch == []):
+                            continue
+                    dataloader_instance.data_list.append(batch)
+                    dataloader_instance.length += 1
+                    if dataloader_instance.length >= wait_num:
+                        dataloader_instance.need_data_event.clear()
+                else:  # Can sleep few time since the data_queue is empty, that's no matter to sleep.
+                    time.sleep(3)
+
+总之，目前先到这吧，优化方案也有了（统计3s需要的batch数，然后乘上系数作为条件），先到这了。
