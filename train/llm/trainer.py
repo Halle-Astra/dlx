@@ -28,11 +28,11 @@ class LossList(nn.Module):
         self.loss_funcs = nn.ModuleList(list)
 
     def forward(self, *args, **kwargs):
-        loss = 0
+        loss = torch.tensor(0)
         for loss_func in self.loss_funcs:
             loss_value = loss_func(*args, **kwargs)
             if not torch.isnan(loss_value):
-                loss = loss + loss_value
+                loss = loss.to(loss_value.device) + loss_value
         return loss
 
 
@@ -49,7 +49,7 @@ class DefaultGenerativeLoss(nn.Module):
         logger.debug('shape, dtype of label: {}, {}'.format(label.shape, label.dtype))
         loss = self.ce_loss(output, label)
         if torch.isnan(loss):
-            loss = 0
+            loss = torch.tensor(0, device=output.device)
         return loss
 
 
@@ -196,7 +196,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         prof_stopped_flag = False
         valid_batch_nums = 0
         _time_mem = {'batch_cost': []}
-        loss_accumulated = 0
+        loss_accumulated = torch.tensor(0, device=self.device)
 
         for _e in range(self.epochs):
             _time_wait_batch = time.time()
@@ -225,13 +225,13 @@ class AutoRegressiveTrainer(BaseTrainer):
                 logger.debug(f'cost of computing loss: {_time_end_loss - _time_end_forward}')
                 # print(loss.item())
 
-                valid_batch_nums += 1 if loss > 0 else 0
+                valid_batch_nums += 1 if loss.item() > 0 else 0
                 loss_accumulated = loss + loss_accumulated
                 self.optimizer.zero_grad()
-                if self.cur_step % self.accumulate_iters == 0 and loss_accumulated > 0:
+                if self.cur_step % self.accumulate_iters == 0 and loss_accumulated.item() > 0:
                     # loss.backward()  # retain_graph=True)
                     self._backward(loss_accumulated)
-                    loss_accumulated = 0
+                    loss_accumulated = torch.tensor(0, device=self.device)
 
                 _time_end_backward = timer.mark()
                 logger.debug(f'cost of backward: {_time_end_backward - _time_end_loss}')
@@ -244,7 +244,7 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 # log training states
                 if self.cur_step % self.train_log_iters == 0:
-                    loss_show = None if isinstance(loss, int) else loss.item()
+                    loss_show = None if loss.item() == 0 else loss.item()
                     valid_batch_ratio = valid_batch_nums / self.train_log_iters if self.cur_step > 0 else None
                     self.log_training(loss_show,
                                       valid_batch_ratio,
