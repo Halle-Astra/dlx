@@ -176,7 +176,7 @@ class AutoRegressiveTrainer(BaseTrainer):
             logger.debug(f'time of optim: {_time_end_optimizer - _time_end_compute_grad}')
 
     def _start_without_profile(self):
-        self._start_without_profile()
+        self._start_main_routine()
 
     def _start_with_profile(self,):
         with torch.profiler.profile(
@@ -277,3 +277,26 @@ class AutoRegressiveTrainer(BaseTrainer):
             self.save(loss, eval_loss)
             self.cur_epoch += 1
         prof.stop() if prof is not None and not prof_stopped_flag else ...
+
+    def _start_debug(self, prof=None):
+        prof_stopped_flag = False
+        valid_batch_nums = 0
+        _time_mem = {'batch_cost': []}
+        loss_accumulated = torch.tensor(0, device=self.device)
+        ce_loss = nn.CrossEntropyLoss()
+
+        for _e in range(self.epochs):
+            _time_wait_batch = time.time()
+            for i, batch in enumerate(self.dataloader):
+                # self.step += 1
+                input_x, label, other_args = batch
+                input_x = input_x.to(self.device)
+                label = label.to(self.device)
+
+                output = self.model(input_x, **other_args)
+
+                loss = ce_loss(output[:,:-1], label)
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+

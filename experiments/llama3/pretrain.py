@@ -104,4 +104,4 @@ if __name__ == '__main__':
         amp=True, profile_dir=None,
         profile_steps=None,
     )
-    trainer.start()
+    trainer._start_debug()
