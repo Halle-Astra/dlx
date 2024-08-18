@@ -76,6 +76,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                  model_parallel_size=None,
                  profile_dir=None,
                  profile_steps=None,
+                 vocab_size=None,
                  ):
         """
 
@@ -112,6 +113,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         self.amp = amp
         self.profile_dir = profile_dir
         self.profile_steps = profile_steps
+        self.vocab_size = vocab_size
 
         if amp:
             self.scaler = GradScaler()
@@ -294,8 +296,9 @@ class AutoRegressiveTrainer(BaseTrainer):
                 label = label.to(self.device)
 
                 output = self.model(input_x, **other_args)
-
-                loss = ce_loss(output[:,:-1], label)
+                # bs,seq,vocab_size = output.shape
+                output = output[:,:-1].reshape(-1, self.vocab_size)
+                loss = ce_loss(output, label)
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()

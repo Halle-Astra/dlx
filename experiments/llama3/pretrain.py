@@ -103,5 +103,6 @@ if __name__ == '__main__':
         grad_clip=None, device='cuda',
         amp=True, profile_dir=None,
         profile_steps=None,
+        vocab_size=margs.vocab_size,
     )
     trainer._start_debug()
