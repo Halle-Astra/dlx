@@ -78,9 +78,9 @@ if __name__ == '__main__':
     # wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'
     # train_dataset = WuDao(wudao_root, tokenizer)
     # train_dataloader = FileSegmentsDataloader(train_dataset, num_worker=24, batch_size=32,)
-    train_dataloader = (torch.randint(100, (48, 150,), dtype=torch.long, device='cuda'),
+    train_dataloader = ((torch.randint(100, (48, 150,), dtype=torch.long, device='cuda'),
                         torch.randint(100, (48, 150), dtype=torch.long, device='cuda')[:,1:].flatten(),
-                        None
+                        None)
                         for i in range(100000000))
 
     # model
