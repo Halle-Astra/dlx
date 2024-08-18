@@ -1,3 +1,5 @@
+import time
+
 from dlx.utils.data.dataloader import (
     Dataloader,
     default_generate_batch
@@ -112,6 +114,8 @@ class FileSegmentsDataloader(Dataloader):
                      self.change_file_times.value):
                 self.rload_file()
                 self.arrange_workers()
+
+            time.sleep(3)
         logger.warning("WorkerWatcher is exiting.")
 
     def worker_func(self,):#contents_num, content_list, queue, process_count, lock, workers_exit, tokenizer):  # 进程

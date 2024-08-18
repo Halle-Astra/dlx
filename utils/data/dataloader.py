@@ -75,6 +75,8 @@ def default_generate_batch(dataloader_instance, collate_fn=None):
                         continue
                 dataloader_instance.data_list.append(batch)
                 dataloader_instance.length += 1
+            else:  # Can sleep few time since the data_queue is empty, that's no matter to sleep.
+                time.sleep(3)
 
 
 
