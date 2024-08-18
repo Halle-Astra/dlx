@@ -74,6 +74,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                  eval_dataloader=None,
                  amp=False,
                  model_parallel_size=None,
+                 profile_dir=None,
                  ):
         """
 
@@ -108,6 +109,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         self.accumulate_iters = accumulate_iters
         self.eval_dataloader = eval_dataloader
         self.amp = amp
+        self.profile_dir = profile_dir
 
         if amp:
             self.scaler = GradScaler()
@@ -175,6 +177,16 @@ class AutoRegressiveTrainer(BaseTrainer):
         valid_batch_nums = 0
         _time_mem = {'batch_cost': []}
         loss_accumulated = 0
+
+        prof = None
+        if self.profile_dir is not None and isinstance(self.profile_dir, str):
+            prof = torch.profiler.profile(
+                schedule=torch.profiler.schedule(wait=1, warmup=1, active=3, repeat=1),
+                on_trace_ready=torch.profiler.tensorboard_trace_handler(self.profile_dir),
+                record_shapes=True,
+                with_stack=True)
+            prof.start()
+
         for _e in range(self.epochs):
             _time_wait_batch = time.time()
             for i, batch in enumerate(self.dataloader):
@@ -243,8 +255,10 @@ class AutoRegressiveTrainer(BaseTrainer):
                     self.save(loss, eval_loss)
 
                 self.cur_step += 1
+                prof.step() if prof is not None else ...
 
                 _time_wait_batch = timer.mark()
                 logger.debug(f'total cost time: {_time_wait_batch - _time_got_batch}')
             self.save(loss, eval_loss)
             self.cur_epoch += 1
+        prof.stop() if prof is not None else ...

@@ -175,16 +175,18 @@ class Attention(nn.Module):
                 self.args.max_seq_len,
                 self.n_local_kv_heads,
                 self.head_dim,
-            )
-        ).cuda()
+            ),
+            device = self.cache_k.device
+        )
         self.cache_v = torch.zeros(
             (
                 self.args.max_batch_size,
                 self.args.max_seq_len,
                 self.n_local_kv_heads,
                 self.head_dim,
-            )
-        ).cuda()
+            ),
+            device=self.cache_v.device
+        )
         # print("成功reset")
 
     def forward(
@@ -348,7 +350,7 @@ class Transformer(nn.Module):
     def forward(self, tokens: torch.Tensor, start_pos=None, index_in_batch=None):
         _bsz, seqlen = tokens.shape
         h = self.tok_embeddings(tokens)
-        self.freqs_cis = self.freqs_cis.to(h.device)
+        # self.freqs_cis = self.freqs_cis.to(h.device)
         freqs_cis = self.freqs_cis[start_pos: start_pos + seqlen]
 
         _time_begin_generate_mask = timer.mark()
