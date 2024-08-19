@@ -59,12 +59,23 @@ class BaseWatcherThread(Thread):
 
 
 def default_generate_batch(dataloader_instance, collate_fn=None):
+    _take_data_minimal_num = 4
+    _take_data_min_num_multiplier = 4
+    _sleep_time = 3
+    _first_flag = True
+    _time_first_begin = time.time()
     while not dataloader_instance.watcher_exit_event.is_set():
         if dataloader_instance.debug:
             if not dataloader_instance.data_queue.empty():
                 dataloader_instance.data_queue.get()
         else:
-            if not dataloader_instance.length>400 and not dataloader_instance.data_queue.empty():
+
+            if _first_flag or (
+                    not dataloader_instance._data_list_length>
+                        _take_data_min_num_multiplier * _take_data_minimal_num
+                    and
+                    not dataloader_instance.data_queue.empty()
+            ):
                 batch = []
                 for i in range(dataloader_instance.batch_size):
                     sample = dataloader_instance.data_queue.get()
@@ -74,9 +85,16 @@ def default_generate_batch(dataloader_instance, collate_fn=None):
                     if (batch is None) or (batch == []):
                         continue
                 dataloader_instance.data_list.append(batch)
-                dataloader_instance.length += 1
+                dataloader_instance._data_list_length += 1
+
             else:  # Can sleep few time since the data_queue is empty, that's no matter to sleep.
-                time.sleep(3)
+                _length_begin_sleep = dataloader_instance._data_list_length
+                time.sleep(_sleep_time)
+                _length_end_sleep = dataloader_instance._data_list_length
+                _take_data_minimal_num = _length_begin_sleep - _length_end_sleep
+
+            if _first_flag and (dataloader_instance._data_list_length > _take_data_minimal_num):
+                _first_flag = False
 
 
 
@@ -136,7 +154,7 @@ class Dataloader(BaseWatcherThread):
 
         self.data_queue = Queue(maxsize=queue_size)
         self.data_list = list()
-        self.length = 0
+        self._data_list_length = 0
 
         self.workers_exit_event = Event()
         self.watcher_exit_event = Event()
@@ -168,9 +186,9 @@ class Dataloader(BaseWatcherThread):
         while True:
             if self.current_step == self.steps:
                 raise StopIteration
-            if self.length:
+            if self._data_list_length:
                 sample = self.data_list.pop(0)
-                self.length -= 1
+                self._data_list_length -= 1
                 self.current_step += 1
                 _time_end_getitem = time.time()
                 logger.debug(f'the time for waiting batch: {_time_end_getitem - _time_begin_getitem}s')
