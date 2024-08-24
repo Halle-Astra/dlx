@@ -56,7 +56,10 @@ class BaseTrainer:
             else:
                 self.model.load_state_dict(weight)
 
-    def resume(self, folder, ext='.pth'):
+    def resume(self, folder=None, ext='.pth'):
+        if folder is None:
+            folder = self.save_folder
+
         if 'latest' in os.listdir(folder):
             folder = os.path.join(folder, 'latest')
             assert os.path.isdir(folder), 'Argument `folder` should be a directory.'
