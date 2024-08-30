@@ -80,7 +80,7 @@ if __name__ == '__main__':
         model_args=margs,
         trainer_args=some_trainer_arguments,
         dataset_args=dataset_args,
-        script_args=dict(args),
+        script_args=args.__dict__,
         lr=lr
     ))
 
