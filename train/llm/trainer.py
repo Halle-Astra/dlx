@@ -78,7 +78,6 @@ class AutoRegressiveTrainer(BaseTrainer):
                  profile_dir=None,
                  profile_steps=None,
                  vocab_size=None,
-                 cli=None,
                  ):
         """
 
@@ -122,7 +121,6 @@ class AutoRegressiveTrainer(BaseTrainer):
 
         self.init_parallel(model_parallel_size)
 
-        self.cli = cli
 
 
     def init_parallel(self, model_parallel_size=None):
@@ -156,7 +154,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         ) if batch_cost is not None and batch_cost else ...
         info_string = sep.join(info_string)
         logger.info(info_string)
-        self.cli.log_metric('loss', train_loss)
+        mlflow.log_metric('loss', train_loss)
 
 
     def _backward(self, loss):
