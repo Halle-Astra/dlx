@@ -2,34 +2,34 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$/..">
-      <excludeFolder url="file://$MODULE_DIR$/../AlphaPose-master" />
-      <excludeFolder url="file://$MODULE_DIR$/../baby-llama2-chinese" />
-      <excludeFolder url="file://$MODULE_DIR$/../binance-connector-python" />
-      <excludeFolder url="file://$MODULE_DIR$/../binance-quant-robot" />
-      <excludeFolder url="file://$MODULE_DIR$/../ChatGLM3" />
-      <excludeFolder url="file://$MODULE_DIR$/../chatgpt文件存档" />
-      <excludeFolder url="file://$MODULE_DIR$/../create_planner_data" />
-      <excludeFolder url="file://$MODULE_DIR$/../ddata" />
-      <excludeFolder url="file://$MODULE_DIR$/../elabel_front" />
-      <excludeFolder url="file://$MODULE_DIR$/../GLM" />
-      <excludeFolder url="file://$MODULE_DIR$/../glm-learning" />
-      <excludeFolder url="file://$MODULE_DIR$/../glm_jd" />
-      <excludeFolder url="file://$MODULE_DIR$/../gpt-2" />
-      <excludeFolder url="file://$MODULE_DIR$/../indexPage" />
-      <excludeFolder url="file://$MODULE_DIR$/../llama3" />
-      <excludeFolder url="file://$MODULE_DIR$/../o3d_drawing" />
-      <excludeFolder url="file://$MODULE_DIR$/../Open-Sora-Plan" />
       <excludeFolder url="file://$MODULE_DIR$/../pdf_test" />
-      <excludeFolder url="file://$MODULE_DIR$/../PowerAgent" />
-      <excludeFolder url="file://$MODULE_DIR$/../qt5" />
-      <excludeFolder url="file://$MODULE_DIR$/../qt533" />
-      <excludeFolder url="file://$MODULE_DIR$/../quant_system" />
-      <excludeFolder url="file://$MODULE_DIR$/../sentencepiece" />
       <excludeFolder url="file://$MODULE_DIR$/../tensor2tensor" />
-      <excludeFolder url="file://$MODULE_DIR$/../voronoi" />
+      <excludeFolder url="file://$MODULE_DIR$/../chatgpt文件存档" />
+      <excludeFolder url="file://$MODULE_DIR$/../GLM" />
+      <excludeFolder url="file://$MODULE_DIR$/../o3d_drawing" />
+      <excludeFolder url="file://$MODULE_DIR$/../indexPage" />
+      <excludeFolder url="file://$MODULE_DIR$/../glm_jd" />
+      <excludeFolder url="file://$MODULE_DIR$/../baby-llama2-chinese" />
+      <excludeFolder url="file://$MODULE_DIR$/../ddata" />
+      <excludeFolder url="file://$MODULE_DIR$/../quant_system" />
+      <excludeFolder url="file://$MODULE_DIR$/../qt5" />
       <excludeFolder url="file://$MODULE_DIR$/../论文" />
+      <excludeFolder url="file://$MODULE_DIR$/../binance-quant-robot" />
+      <excludeFolder url="file://$MODULE_DIR$/../binance-connector-python" />
+      <excludeFolder url="file://$MODULE_DIR$/../qt533" />
+      <excludeFolder url="file://$MODULE_DIR$/../elabel_front" />
+      <excludeFolder url="file://$MODULE_DIR$/../PowerAgent" />
+      <excludeFolder url="file://$MODULE_DIR$/../gpt-2" />
+      <excludeFolder url="file://$MODULE_DIR$/../llama3" />
+      <excludeFolder url="file://$MODULE_DIR$/../Open-Sora-Plan" />
+      <excludeFolder url="file://$MODULE_DIR$/../glm-learning" />
+      <excludeFolder url="file://$MODULE_DIR$/../ChatGLM3" />
+      <excludeFolder url="file://$MODULE_DIR$/../sentencepiece" />
+      <excludeFolder url="file://$MODULE_DIR$/../voronoi" />
+      <excludeFolder url="file://$MODULE_DIR$/../AlphaPose-master" />
+      <excludeFolder url="file://$MODULE_DIR$/../create_planner_data" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.8 (dreambooth)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="$USER_HOME$/miniconda3" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">

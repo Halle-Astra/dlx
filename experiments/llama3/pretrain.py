@@ -19,6 +19,8 @@ from dlx.utils.data.nlp.file_segments_dataloader import FileSegmentsDataloader
 from dlx.utils.stat import stat_parameters_num
 from loguru import logger
 import sys
+import mlflow
+
 # logger.remove()
 # logger.add(sys.stderr, level='INFO')
 
@@ -52,24 +54,35 @@ def get_args():
     return args
 
 
-def init_parallel(model_parallel_size=1):
-    if not torch.distributed.is_initialized():
-        torch.distributed.init_process_group("nccl")
-    if not model_parallel_is_initialized():
-        if model_parallel_size is None:
-            model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
-        initialize_model_parallel(model_parallel_size)
-    torch.cuda.set_device(dist.get_rank())
-    # print(f'当前的rank为{dist.get_rank()}')
-    # print(f'当前的world_size为{dist.get_world_size()}')
-
-
 if __name__ == '__main__':
     # set up the arguments
     args = get_args()
 
-    # ddp setting
-    # init_parallel(args.model_parallel_size)
+    # mlflow setting
+    mlflow.set_tracking_uri(uri="http://ai-universe.cn:7516")
+    mlflow.start_run()
+    mlflow.set_experiment("Llama3 pretraining")
+    some_trainer_arguments = dict(
+        model_is_kv_cache_enabled=False,
+        ids_dtype=torch.long, parallel='ddp',
+        grad_clip=None, device='cuda',
+        amp=True, profile_dir=None,
+        profile_steps=None,
+        vocab_size=margs.vocab_size,
+        world_size=1,
+
+    )
+    dataset_args = dict(
+        num_worker=24, batch_size=32,
+    )
+    lr=5e-5
+    mlflow.log_params(dict(
+        model_args=margs,
+        trainer_args=some_trainer_arguments,
+        dataset_args=dataset_args,
+        script_args=dict(args),
+        lr=lr
+    ))
 
     # tokenizer
     tokenizer = Tokenizer()
@@ -77,7 +90,7 @@ if __name__ == '__main__':
     # dataloader
     wudao_root = '/dataset/fd5061f6/chinese_data/WuDao'
     train_dataset = WuDao(wudao_root, tokenizer)
-    train_dataloader = FileSegmentsDataloader(train_dataset, num_worker=24, batch_size=32,)
+    train_dataloader = FileSegmentsDataloader(train_dataset, **dataset_args)
     # train_dataloader = ((torch.randint(100, (48, 150,), dtype=torch.long, device='cuda'),
     #                     torch.randint(100, (48, 150), dtype=torch.long, device='cuda')[:,1:].flatten(),
     #                      dict(start_pos=0))
@@ -93,20 +106,14 @@ if __name__ == '__main__':
     # model = DDP(model, broadcast_buffers=False)
     stat_parameters_num(model)
 
-
     # others
-    optimizer = Adam(model.parameters(), lr=1e-5)
+    optimizer = Adam(model.parameters(), lr=lr)
     tokenizer = Tokenizer()
 
     trainer = AutoRegressiveTrainer(
         model, train_dataloader,
         optimizer=optimizer,
-        world_size=1, tokenizer=tokenizer,
-        model_is_kv_cache_enabled=False,
-        ids_dtype=torch.long, parallel='ddp',
-        grad_clip=None, device='cuda',
-        amp=True, profile_dir=None,
-        profile_steps=None,
-        vocab_size=margs.vocab_size,
+        tokenizer=tokenizer,
+        **some_trainer_arguments
     )
     trainer.start()

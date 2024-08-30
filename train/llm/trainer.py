@@ -20,6 +20,7 @@ from dlx.utils.train import save_parameters
 from dlx.train.trainer import BaseTrainer
 from dlx.utils.time import timer
 from torch.nn.parallel import DistributedDataParallel as DDP
+import mlflow
 
 class LossList(nn.Module):
     def __init__(self, loss_list: List):
@@ -152,6 +153,8 @@ class AutoRegressiveTrainer(BaseTrainer):
         ) if batch_cost is not None and batch_cost else ...
         info_string = sep.join(info_string)
         logger.info(info_string)
+        mlflow.log_metric('loss', train_loss)
+
 
     def _backward(self, loss):
         if self.amp:
