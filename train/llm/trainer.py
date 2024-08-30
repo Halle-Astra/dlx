@@ -154,7 +154,7 @@ class AutoRegressiveTrainer(BaseTrainer):
         ) if batch_cost is not None and batch_cost else ...
         info_string = sep.join(info_string)
         logger.info(info_string)
-        mlflow.log_metric('loss', train_loss)
+        mlflow.log_metric('loss', train_loss, step=self.cur_step)
 
 
     def _backward(self, loss):
