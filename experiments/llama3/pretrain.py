@@ -60,7 +60,8 @@ if __name__ == '__main__':
 
     # mlflow setting
     mlflow.set_tracking_uri(uri="http://ai-universe.cn:7516")
-    mlflow.start_run()
+    cli = mlflow.MlflowClient()
+    run = cli.create_run('0')
     mlflow.set_experiment("Llama3 pretraining")
     some_trainer_arguments = dict(
         model_is_kv_cache_enabled=False,
@@ -76,7 +77,7 @@ if __name__ == '__main__':
         num_worker=24, batch_size=32,
     )
     lr=5e-5
-    mlflow.log_params(dict(
+    cli.log_params(dict(
         model_args=margs,
         trainer_args=some_trainer_arguments,
         dataset_args=dataset_args,
@@ -113,7 +114,7 @@ if __name__ == '__main__':
     trainer = AutoRegressiveTrainer(
         model, train_dataloader,
         optimizer=optimizer,
-        tokenizer=tokenizer,
+        tokenizer=tokenizer,cli=cli,
         **some_trainer_arguments
     )
     trainer.start()
