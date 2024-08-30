@@ -60,8 +60,8 @@ if __name__ == '__main__':
 
     # mlflow setting
     mlflow.set_tracking_uri(uri="http://ai-universe.cn:7516")
-    mlflow.start_run()
     mlflow.set_experiment("Llama3 pretraining")
+    mlflow.start_run()
     some_trainer_arguments = dict(
         model_is_kv_cache_enabled=False,
         ids_dtype=torch.long, parallel='ddp',
