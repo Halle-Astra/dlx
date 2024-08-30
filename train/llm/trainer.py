@@ -273,6 +273,8 @@ class AutoRegressiveTrainer(BaseTrainer):
                     mlflow.pytorch.log_model(self.model, artifact_path='model_training')
 
                 self.cur_step += 1
+
+
                 prof.step() if prof is not None else ...
 
                 if prof is not None and self.cur_step > self.profile_steps:
