@@ -270,6 +270,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                 # save parameters
                 if self.cur_step % self.save_iters == 0 and self.cur_step > 0:
                     self.save(loss, eval_loss)
+                    mlflow.pytorch.log_model(self.model, artifact_path='model_training')
 
                 self.cur_step += 1
                 prof.step() if prof is not None else ...
