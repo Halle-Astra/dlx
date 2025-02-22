@@ -19,16 +19,17 @@ from dlx.utils.data.nlp.file_segments_dataloader import FileSegmentsDataloader
 from dlx.utils.stat import stat_parameters_num
 from loguru import logger
 import sys
-# logger.remove()
-# logger.add(sys.stderr, level='INFO')
-
+from torch.utils.tensorboard import SummaryWriter
+logger.remove()
+logger.add(sys.stderr, level='INFO')
+# logger.add('log.txt')
 # torch.autograd.set_detect_anomaly(True)
 
 args = {
     "dim": 512,
     "n_layers": 8,
-    "n_heads": 1,
-    "n_kv_heads": 1,
+    "n_heads": 4,
+    "n_kv_heads": 2,
     "vocab_size": 128256,
     "multiple_of": 1024,
     "ffn_dim_multiplier": 1.3,
@@ -67,6 +68,7 @@ def init_parallel(model_parallel_size=1):
 if __name__ == '__main__':
     # set up the arguments
     args = get_args()
+    summary_writer = SummaryWriter('logs')
 
     # ddp setting
     # init_parallel(args.model_parallel_size)
@@ -108,5 +110,8 @@ if __name__ == '__main__':
         amp=True, profile_dir=None,
         profile_steps=None,
         vocab_size=margs.vocab_size,
+        summary_writer=summary_writer,
+        resume=False,
+        save_iters=3000
     )
     trainer.start()

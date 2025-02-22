@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="7bf04361-d8fd-4bbb-b1c4-b284d6f1d63e" name="main-server">
+        <fileTransfer accessType="SFTP" host="ai-universe.cn" port="7512" sshConfigId="9fe47326-09d1-4c41-bd8a-48a4d444ba7c" sshConfig="halle@ai-universe.cn:7512 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="27f062db-d91b-46f9-b7b6-fca087dd707a" name="3080-linux">
+        <fileTransfer accessType="SFTP" host="ai-universe.cn" port="7520" sshConfigId="1a80697f-8af3-4d5b-b98d-d0b239f7cc48" sshConfig="halle@ai-universe.cn:7520 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

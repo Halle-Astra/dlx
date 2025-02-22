@@ -242,3 +242,239 @@ n_layers改成2都能运行。离谱.
                     time.sleep(3)
 
 总之，目前先到这吧，优化方案也有了（统计3s需要的batch数，然后乘上系数作为条件），先到这了。
+
+
+# 20250126
+
+关于我的双卡机器的温度和噪声控制问题，目前比较好的控制组合是
+
+功率墙： 150w
+
+风扇控制命令为： `sudo $(which coolgpus)  --temp 50   88 90  --speed 27 40  50`
+
+这样之后，稳定的状态为
+```
+Fan  Temp  Perf  Pwr:Usage/Cap│         Memory-Usage │ GPU-Util  Compute M. 
+40%   86C    P2   134W / 150W │  17795MiB / 22.00GiB │     98%      Default
+```
+
+相比满功耗，dlx的训练时间，从92小时增加至117小时，比预期要好很多。
+
+# 20250208
+
+由于训练总是在一小时内出现torch计算速度极其缓慢的情况，现在开始进行问题排查。
+
+torch相关的原有版本：
+
+``` 
+nvidia-dlprof-pytorch-nvtx    1.0.0
+pytorch-quantization          2.1.0
+pytorch-transformers          1.1.0
+torch                         1.9.0a0+df837d0
+torchtext                     0.9.0a0
+torchvision                   0.9.0a0
+```
+
+居然还有conda环境不一致的问题
+
+``` 
+root@master:/workspace# conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 -c pytorch -y
+Collecting package metadata (current_repodata.json): done
+Solving environment: failed with initial frozen solve. Retrying with flexible solve.
+Collecting package metadata (repodata.json): done
+Solving environment: |
+The environment is inconsistent, please check the package plan carefully
+The following packages are causing the inconsistency:
+
+  - defaults/linux-64::numpy==1.19.2=py38h6163131_0
+  - defaults/linux-64::ipython==7.21.0=py38hb070fc8_0
+  - defaults/noarch::pygments==2.8.1=pyhd3eb1b0_0
+  - defaults/linux-64::jsonschema==3.0.2=py38_0
+  - defaults/linux-64::cython-blis==0.7.4=py38h27cfd23_1
+  - defaults/noarch::prompt-toolkit==3.0.8=py_0
+  - defaults/noarch::jinja2==2.11.3=pyhd3eb1b0_0
+  - defaults/linux-64::scipy==1.6.1=py38hf56f3a7_0
+  - defaults/linux-64::conda==4.9.2=py38h06a4308_0
+  - defaults/linux-64::thinc==7.4.5=py38h9a67853_0
+  - defaults/linux-64::conda-package-handling==1.7.2=py38h03888b9_0
+  - defaults/linux-64::numba==0.52.0=py38ha9443f7_0
+  - defaults/linux-64::spacy==2.3.5=py38hff7bd54_0
+  - defaults/linux-64::conda-build==3.21.4=py38h06a4308_0                                                                                                   done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.9.2
+  latest version: 25.1.1
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+
+## Package Plan ##
+
+  environment location: /opt/conda
+
+  added / updated specs:
+    - pytorch==1.12.1
+    - torchaudio==0.12.1
+    - torchvision==0.13.1
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    _openmp_mutex-5.1          |            1_gnu          21 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    ca-certificates-2024.12.31 |       h06a4308_0         128 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    certifi-2024.8.30          |   py38h06a4308_0         162 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    charset-normalizer-3.3.2   |     pyhd3eb1b0_0          44 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    cudatoolkit-11.3.1         |       h2bc3f7f_2       549.3 MB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    ffmpeg-4.3                 |       hf484d3e_0         9.9 MB  pytorch
+    freetype-2.12.1            |       h4a9f257_0         626 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    future-0.18.3              |   py38h06a4308_0         672 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    gmp-6.3.0                  |       h6a678d5_0         608 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    gnutls-3.6.15              |       he1e5248_0         1.0 MB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    jpeg-9e                    |       h5eee18b_3         262 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    lame-3.100                 |       h7b6447c_0         323 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    lcms2-2.12                 |       h3be6417_0         312 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    libgcc-ng-11.2.0           |       h1234567_1         5.3 MB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    libgomp-11.2.0             |       h1234567_1         474 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    libiconv-1.16              |       h5eee18b_3         759 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    libidn2-2.3.4              |       h5eee18b_0         146 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    libpng-1.6.39              |       h5eee18b_0         304 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    libprotobuf-3.20.3         |       he621ea3_0         2.4 MB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    libstdcxx-ng-11.2.0        |       h1234567_1         4.7 MB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    libtasn1-4.19.0            |       h5eee18b_0          63 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    libtiff-4.2.0              |       h85742a9_0         502 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    libunistring-0.9.10        |       h27cfd23_0         536 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    libwebp-base-1.3.2         |       h5eee18b_1         425 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    nettle-3.7.3               |       hbbd107a_1         809 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    numpy-base-1.19.2          |   py38h75fe3a5_0         4.2 MB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    openh264-2.1.1             |       h4ff587b_0         711 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    openjpeg-2.4.0             |       h9ca470c_2         363 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    openssl-1.1.1w             |       h7f8727e_0         3.7 MB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    pillow-10.4.0              |   py38h5eee18b_0         795 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    pytorch-1.12.1             |cpu_py38h9dbd814_1        49.2 MB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    pytorch-mutex-1.0          |             cuda           3 KB  pytorch
+    requests-2.32.3            |   py38h06a4308_0         100 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    setuptools-75.1.0          |   py38h06a4308_0         1.7 MB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    torchaudio-0.12.1          |       py38_cu113         6.2 MB  pytorch
+    torchvision-0.13.1         |       py38_cu113        28.7 MB  pytorch
+    tqdm-4.66.5                |   py38h2f386ee_0         133 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    typing-extensions-4.11.0   |   py38h06a4308_0           9 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    typing_extensions-4.11.0   |   py38h06a4308_0          59 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    zlib-1.2.13                |       h5eee18b_1         111 KB  https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+    ------------------------------------------------------------
+                                           Total:       675.5 MB
+
+The following NEW packages will be INSTALLED:
+
+  _openmp_mutex      anaconda/pkgs/main/linux-64::_openmp_mutex-5.1-1_gnu
+  charset-normalizer anaconda/pkgs/main/noarch::charset-normalizer-3.3.2-pyhd3eb1b0_0
+  cudatoolkit        anaconda/pkgs/main/linux-64::cudatoolkit-11.3.1-h2bc3f7f_2
+  ffmpeg             pytorch/linux-64::ffmpeg-4.3-hf484d3e_0
+  freetype           anaconda/pkgs/main/linux-64::freetype-2.12.1-h4a9f257_0
+  future             anaconda/pkgs/main/linux-64::future-0.18.3-py38h06a4308_0
+  gmp                anaconda/pkgs/main/linux-64::gmp-6.3.0-h6a678d5_0
+  gnutls             anaconda/pkgs/main/linux-64::gnutls-3.6.15-he1e5248_0
+  jpeg               anaconda/pkgs/main/linux-64::jpeg-9e-h5eee18b_3
+  lame               anaconda/pkgs/main/linux-64::lame-3.100-h7b6447c_0
+  lcms2              anaconda/pkgs/main/linux-64::lcms2-2.12-h3be6417_0
+  libgomp            anaconda/pkgs/main/linux-64::libgomp-11.2.0-h1234567_1
+  libiconv           anaconda/pkgs/main/linux-64::libiconv-1.16-h5eee18b_3
+  libidn2            anaconda/pkgs/main/linux-64::libidn2-2.3.4-h5eee18b_0
+  libpng             anaconda/pkgs/main/linux-64::libpng-1.6.39-h5eee18b_0
+  libprotobuf        anaconda/pkgs/main/linux-64::libprotobuf-3.20.3-he621ea3_0
+  libtasn1           anaconda/pkgs/main/linux-64::libtasn1-4.19.0-h5eee18b_0
+  libtiff            anaconda/pkgs/main/linux-64::libtiff-4.2.0-h85742a9_0
+  libunistring       anaconda/pkgs/main/linux-64::libunistring-0.9.10-h27cfd23_0
+  libwebp-base       anaconda/pkgs/main/linux-64::libwebp-base-1.3.2-h5eee18b_1
+  nettle             anaconda/pkgs/main/linux-64::nettle-3.7.3-hbbd107a_1
+  numpy-base         anaconda/pkgs/main/linux-64::numpy-base-1.19.2-py38h75fe3a5_0
+  openh264           anaconda/pkgs/main/linux-64::openh264-2.1.1-h4ff587b_0
+  openjpeg           anaconda/pkgs/main/linux-64::openjpeg-2.4.0-h9ca470c_2
+  pillow             anaconda/pkgs/main/linux-64::pillow-10.4.0-py38h5eee18b_0
+  pytorch            anaconda/pkgs/main/linux-64::pytorch-1.12.1-cpu_py38h9dbd814_1
+  pytorch-mutex      pytorch/noarch::pytorch-mutex-1.0-cuda
+  requests           anaconda/pkgs/main/linux-64::requests-2.32.3-py38h06a4308_0
+  setuptools         anaconda/pkgs/main/linux-64::setuptools-75.1.0-py38h06a4308_0
+  torchaudio         pytorch/linux-64::torchaudio-0.12.1-py38_cu113
+  torchvision        pytorch/linux-64::torchvision-0.13.1-py38_cu113
+  tqdm               anaconda/pkgs/main/linux-64::tqdm-4.66.5-py38h2f386ee_0
+  typing-extensions  anaconda/pkgs/main/linux-64::typing-extensions-4.11.0-py38h06a4308_0
+  typing_extensions  anaconda/pkgs/main/linux-64::typing_extensions-4.11.0-py38h06a4308_0
+
+The following packages will be UPDATED:
+
+  ca-certificates    pkgs/main::ca-certificates-2021.1.19-~ --> anaconda/pkgs/main::ca-certificates-2024.12.31-h06a4308_0
+  certifi            pkgs/main::certifi-2020.12.5-py38h06a~ --> anaconda/pkgs/main::certifi-2024.8.30-py38h06a4308_0
+  libgcc-ng           pkgs/main::libgcc-ng-9.1.0-hdf63c60_0 --> anaconda/pkgs/main::libgcc-ng-11.2.0-h1234567_1
+  libstdcxx-ng       pkgs/main::libstdcxx-ng-9.1.0-hdf63c6~ --> anaconda/pkgs/main::libstdcxx-ng-11.2.0-h1234567_1
+  openssl              pkgs/main::openssl-1.1.1j-h27cfd23_0 --> anaconda/pkgs/main::openssl-1.1.1w-h7f8727e_0
+  zlib                    pkgs/main::zlib-1.2.11-h7b6447c_3 --> anaconda/pkgs/main::zlib-1.2.13-h5eee18b_1
+
+
+
+Downloading and Extracting Packages
+libunistring-0.9.10  | 536 KB    | ################################################################################################################### | 100%
+lcms2-2.12           | 312 KB    | ################################################################################################################### | 100%
+freetype-2.12.1      | 626 KB    | ################################################################################################################### | 100%
+setuptools-75.1.0    | 1.7 MB    | ################################################################################################################### | 100%
+charset-normalizer-3 | 44 KB     | ################################################################################################################### | 100%
+ffmpeg-4.3           | 9.9 MB    | ################################################################################################################### | 100%
+libtiff-4.2.0        | 502 KB    | ################################################################################################################### | 100%
+pytorch-1.12.1       | 49.2 MB   | ################################################################################################################### | 100%
+jpeg-9e              | 262 KB    | ################################################################################################################### | 100%
+torchaudio-0.12.1    | 6.2 MB    | ################################################################################################################### | 100%
+openjpeg-2.4.0       | 363 KB    | ################################################################################################################### | 100%
+numpy-base-1.19.2    | 4.2 MB    | ################################################################################################################### | 100%
+openssl-1.1.1w       | 3.7 MB    | ################################################################################################################### | 100%
+libpng-1.6.39        | 304 KB    | ################################################################################################################### | 100%
+libgomp-11.2.0       | 474 KB    | ################################################################################################################### | 100%
+zlib-1.2.13          | 111 KB    | ################################################################################################################### | 100%
+lame-3.100           | 323 KB    | ################################################################################################################### | 100%
+requests-2.32.3      | 100 KB    | ################################################################################################################### | 100%
+cudatoolkit-11.3.1   | 549.3 MB  | ################################################################################################################### | 100%
+certifi-2024.8.30    | 162 KB    | ################################################################################################################### | 100%
+typing-extensions-4. | 9 KB      | ################################################################################################################### | 100%
+ca-certificates-2024 | 128 KB    | ################################################################################################################### | 100%
+torchvision-0.13.1   | 28.7 MB   | ################################################################################################################### | 100%
+libgcc-ng-11.2.0     | 5.3 MB    | ################################################################################################################### | 100%
+nettle-3.7.3         | 809 KB    | ################################################################################################################### | 100%
+libstdcxx-ng-11.2.0  | 4.7 MB    | ################################################################################################################### | 100%
+typing_extensions-4. | 59 KB     | ################################################################################################################### | 100%
+tqdm-4.66.5          | 133 KB    | ################################################################################################################### | 100%
+openh264-2.1.1       | 711 KB    | ################################################################################################################### | 100%
+pytorch-mutex-1.0    | 3 KB      | ################################################################################################################### | 100%
+_openmp_mutex-5.1    | 21 KB     | ################################################################################################################### | 100%
+libidn2-2.3.4        | 146 KB    | ################################################################################################################### | 100%
+libtasn1-4.19.0      | 63 KB     | ################################################################################################################### | 100%
+gnutls-3.6.15        | 1.0 MB    | ################################################################################################################### | 100%
+future-0.18.3        | 672 KB    | ################################################################################################################### | 100%
+libwebp-base-1.3.2   | 425 KB    | ################################################################################################################### | 100%
+pillow-10.4.0        | 795 KB    | ################################################################################################################### | 100%
+libprotobuf-3.20.3   | 2.4 MB    | ################################################################################################################### | 100%
+libiconv-1.16        | 759 KB    | ################################################################################################################### | 100%
+gmp-6.3.0            | 608 KB    | ################################################################################################################### | 100%
+Preparing transaction: done
+Verifying transaction: failed
+
+RemoveError: 'requests' is a dependency of conda and cannot be removed from
+conda's operating environment.
+RemoveError: 'setuptools' is a dependency of conda and cannot be removed from
+conda's operating environment.
+```
+
+在卡死的不知道为什么只有3个进程，正常的时候是26个。
+
+
+# 实验方案
+三个东西作为输入，分为直接重新重建，自回归，多输出
+
+以及半思维链，半自回归，半强化学习，最小编辑距离作为reward
+
+关于loss下降太慢的问题，可能还是有点问题，要不考虑，将所有能够促使loss下降的梯度方向累积下来，做滑动平均，舍弃那些垃圾的梯度方向。也就是不只是单纯的给整体的梯度来算东西。
+而是除了历史梯度以外，还要考虑以往的loss反馈。
+但是历史梯度的存储非常费显存，估计是要做多进程的硬盘或内存转显存的操作

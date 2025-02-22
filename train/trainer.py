@@ -10,10 +10,11 @@ class BaseTrainer:
     def __init__(self, ):
         self.cur_epoch = 0
         self.cur_step = 0
+        self.tokens_num = 0
         self.save_folder = None
         self.accumulate_iters = 1
 
-    def save(self, train_loss=-1, eval_loss=-1):
+    def save(self, train_loss=-1, eval_loss=-1, tokens_num=-1):
         assert self.save_folder is not None, 'save_folder is not set up.'
         folder_name = f'epoch:{self.cur_epoch}-step:{self.cur_step}-train_loss:{train_loss}-eval_loss:{eval_loss}'
 
@@ -27,7 +28,8 @@ class BaseTrainer:
             others = dict(cur_step=self.cur_step,
                           cur_epoch=self.cur_epoch,
                           loss=train_loss,
-                          eval_loss=eval_loss)
+                          eval_loss=eval_loss,
+                          tokens_num=tokens_num)
             save_parameters(
                 folder,
                 model_state_dict,
@@ -76,5 +78,6 @@ class BaseTrainer:
         others = torch.load(others_path)
         self.cur_step = others['cur_step']
         self.cur_epoch = others['cur_epoch']
+        self.tokens_num = others['tokens_num']
 
         logger.info(f'loaded weights from {folder}')

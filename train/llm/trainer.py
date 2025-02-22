@@ -1,6 +1,7 @@
 import os
 import random
 import time
+import multiprocessing
 from torch.cuda.amp import autocast, GradScaler
 import numpy as np
 import torch
@@ -20,6 +21,8 @@ from dlx.utils.train import save_parameters
 from dlx.train.trainer import BaseTrainer
 from dlx.utils.time import timer
 from torch.nn.parallel import DistributedDataParallel as DDP
+import tqdm
+
 
 class LossList(nn.Module):
     def __init__(self, loss_list: List):
@@ -43,6 +46,7 @@ class DefaultGenerativeLoss(nn.Module):
 
     def forward(self, output, label):
         output = output[:, :-1]
+        label = label.flatten()
         bs, seq_length, vocab_size = output.shape
         output = output.contiguous().view(-1, vocab_size)
         logger.debug('shape, dtype of output: {}, {}'.format(output.shape, output.dtype))
@@ -67,16 +71,18 @@ class AutoRegressiveTrainer(BaseTrainer):
                  start_step=0,
                  save_folder='models_train',
                  epochs=4,
-                 train_log_iters=200,
-                 eval_log_iters=200,
+                 train_log_iters=2000,
+                 eval_log_iters=200000,
                  accumulate_iters=1,
-                 save_iters=2000,
+                 save_iters=200000,
                  eval_dataloader=None,
                  amp=False,
                  model_parallel_size=None,
                  profile_dir=None,
                  profile_steps=None,
                  vocab_size=None,
+                 summary_writer=None,
+                 resume=False
                  ):
         """
 
@@ -115,8 +121,12 @@ class AutoRegressiveTrainer(BaseTrainer):
         self.profile_steps = profile_steps
         self.vocab_size = vocab_size
 
+        self.summary_writer = summary_writer
+
         if amp:
             self.scaler = GradScaler()
+        if resume:
+            self.resume()
 
         self.init_parallel(model_parallel_size)
 
@@ -139,7 +149,7 @@ class AutoRegressiveTrainer(BaseTrainer):
     def log_training(self, train_loss, valid_batch_ratio=None, batch_cost=None):
         info_string = [];
         sep = ' | '
-        info_string.append(f'step: {self.cur_step}')
+        info_string.append(f'step: {self.cur_step}/{self.dataloader.steps}')
         info_string.append(f'loss: {train_loss}')
         info_string.append(
             f'ratio of valid batches: {valid_batch_ratio*100}%'
@@ -202,6 +212,7 @@ class AutoRegressiveTrainer(BaseTrainer):
 
         for _e in range(self.epochs):
             _time_wait_batch = time.time()
+            bar = tqdm.tqdm(total=self.dataloader.steps)
             for i, batch in enumerate(self.dataloader):
                 # self.step += 1
                 input_x, label, other_args = batch
@@ -210,6 +221,7 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 _time_got_batch = timer.mark()
                 logger.debug(f'{self.cur_step}, cost of catching batch: {_time_got_batch - _time_wait_batch}s')
+                logger.debug(f'{self.cur_step}, the rest of batches: {self.dataloader._data_list_length}')
                 # logger.debug(f'the shape of input_x is {input_x.shape}')
 
                 if not self.amp:
@@ -243,6 +255,8 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 # other minor operations
                 _time_mem['batch_cost'].append(_time_got_batch - _time_wait_batch)
+                self.tokens_num += other_args.get('tokens_num', 0)
+                self.cur_step += 1
 
                 # log training states
                 if self.cur_step % self.train_log_iters == 0:
@@ -255,30 +269,51 @@ class AutoRegressiveTrainer(BaseTrainer):
                     valid_batch_nums = 0
                     _time_mem['batch_cost'].clear()
 
+                    if self.summary_writer is not None and loss_show is not None and valid_batch_ratio is not None:
+                        self.summary_writer.add_scalar('loss', loss_show, self.cur_step)
+                        self.summary_writer.add_scalar('valid batch ratio', valid_batch_ratio, self.cur_step)
+                        self.summary_writer.add_scalar('tokens num', self.tokens_num, self.cur_step)
+                        if self.tokenizer is not None:
+                            input_ids = input_x.detach().cpu().numpy()[0]
+                            input_text = self.tokenizer.decode(input_ids)
+                            output_ids = output.detach().cpu().numpy()[0].argmax(axis=-1)
+                            output_text = self.tokenizer.decode(output_ids)
+                            entire_text = '{:=^40}\n{}\n{:=^40}\n{}'.format('input', input_text, 'output', output_text)
+                            self.summary_writer.add_text('inspecting text', entire_text, self.cur_step)
+                            logger.info('entire text: \n'+entire_text)
+
+
 
                 # log evaluating states
                 eval_loss = -1
                 if self.cur_step % self.eval_log_iters == 0 and self.eval_dataloader is not None:
                     pass
 
-
-
-                # save parameters
-                if self.cur_step % self.save_iters == 0 and self.cur_step > 0:
-                    self.save(loss, eval_loss)
-
-                self.cur_step += 1
+                # profiling
                 prof.step() if prof is not None else ...
-
                 if prof is not None and self.cur_step > self.profile_steps:
                     prof.stop()
                     prof_stopped_flag = True
 
                 _time_wait_batch = timer.mark()
                 logger.debug(f'total cost time: {_time_wait_batch - _time_got_batch}')
-            self.save(loss, eval_loss)
+
+                # save parameters
+                if self.cur_step % self.save_iters == 0 and self.cur_step > 0:
+                    self.save(loss, eval_loss, tokens_num=self.tokens_num)
+
+                # checking processes
+                active_processes = multiprocessing.active_children()
+                logger.debug(f"Active processes: {len(active_processes)}")
+                logger.debug(f'cur_step: {self.cur_step}, the rest of batches: {self.dataloader._data_list_length}, len: {len(self.dataloader.data_list)}')
+
+
+                bar.update(1)
+            self.save(loss, eval_loss, tokens_num=self.tokens_num)
             self.cur_epoch += 1
+            bar.close()
         prof.stop() if prof is not None and not prof_stopped_flag else ...
+
 
     def _start_debug(self, prof=None):
         prof_stopped_flag = False

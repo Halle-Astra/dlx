@@ -347,7 +347,7 @@ class Transformer(nn.Module):
         )
 
     # @torch.inference_mode()
-    def forward(self, tokens: torch.Tensor, start_pos=None, index_in_batch=None):
+    def forward(self, tokens: torch.Tensor, start_pos=None, index_in_batch=None, **kwargs):
         _bsz, seqlen = tokens.shape
         h = self.tok_embeddings(tokens)
         self.freqs_cis = self.freqs_cis.to(h.device)

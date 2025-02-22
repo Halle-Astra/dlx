@@ -18,6 +18,9 @@ class WuDao:
             contents = json.load(f)
         return contents
 
+    def __len__(self):
+        return 59132213
+
     def collate_fn(self, batch):
         b_lengths = [len(i) for i in batch]
         min_b_length = min(b_lengths)
@@ -34,9 +37,15 @@ class WuDao:
 
         input_x = torch.tensor(input_ndarray, dtype=self.dtype)  # .to(self.device)
         input_y = input_x[:, 1:]
-        input_y = input_y.flatten()
+        input_y = input_y#.flatten()
 
-        return [input_x, input_y, {'start_pos': 0}]
+        return [
+            input_x, input_y,
+            {
+                'start_pos': 0,
+                'tokens_num': sum([len(i) for i in batch])
+            }
+        ]
 
 
 if __name__ == '__main__':
