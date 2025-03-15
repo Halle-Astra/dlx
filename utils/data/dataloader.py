@@ -140,7 +140,7 @@ class Dataloader(BaseWatcherThread):
                  collate_fn=None,
                  generate_batch_func=default_generate_batch,
                  worker_func=None,
-                 worker_watcher=None,
+                 worker_watcher=None,  # must be a BaseWatcherThread
                  # num_samples=None,
                  # as_train_as_test=False,
                  ):

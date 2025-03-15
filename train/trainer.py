@@ -56,6 +56,8 @@ class BaseTrainer:
             if isinstance(self.model, DDP):
                 self.model.module.load_state_dict(weight)
             else:
+                if isinstance(weight, tuple):
+                    weight = weight[0]
                 self.model.load_state_dict(weight)
 
     def resume(self, folder=None, ext='.pth'):
@@ -73,6 +75,8 @@ class BaseTrainer:
         self.load_weights(model_path)
 
         optim_weights = torch.load(optim_path)
+        if isinstance(optim_weights, tuple):
+            optim_weights = optim_weights[0]
         self.optimizer.load_state_dict(optim_weights)
 
         others = torch.load(others_path)

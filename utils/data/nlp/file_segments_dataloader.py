@@ -17,7 +17,7 @@ import sys
 
 class FileSegmentsDataloader(Dataloader):
     def __init__(self, dataset_instance,
-                 change_file_iters=50000,
+                 change_file_iters=50000, #None,
                  queue_size=100000,
                  batch_size=4,
                  steps=None,
@@ -43,6 +43,7 @@ class FileSegmentsDataloader(Dataloader):
 
         # variables for changing file
         self.process_count = Value('i', 0)
+        self.current_file_process_num = Value('i',0)
 
         # This init method will start the worker watcher which need the self.current_file has been initialized.
         if hasattr(dataset_instance, 'collate_fn'):
@@ -72,6 +73,7 @@ class FileSegmentsDataloader(Dataloader):
         self.contents_num.value = len(self.content_list)
         # self.change_file_event.set()
         self.change_file_times.value += 1
+        self.current_file_process_num.value = 0
         logger.debug(f"Loaded file: {self.current_file}, samples: {self.contents_num.value}")
 
     def arrange_workers(self):
@@ -90,7 +92,6 @@ class FileSegmentsDataloader(Dataloader):
             while True:
                 exit_num = 0
                 for w, end_event in self.workers:
-                    logger.debug(f'{w.name}, w.exit_code: {w.exitcode}, w.is_alive: {w.is_alive()}, end? {end_event.is_set()}')
                     if end_event.is_set() and w.is_alive():
                         logger.debug(f'{w.name}: 触发join')
                         try:
@@ -100,23 +101,11 @@ class FileSegmentsDataloader(Dataloader):
                     if not w.is_alive():
                         exit_num += 1
                 if exit_num >= len(self.workers) - 1 :
-                    logger.debug("只剩一个进程没有退出")
                     break
                 logger.debug(f'waiting for workers exiting...current exit num: {exit_num}')
-                logger.debug(f'{self.process_count.value // self.change_file_iters > self.change_file_times.value},'
-                             f'{self.process_count.value}, {self.change_file_iters}, {self.change_file_times.value}')
                 time.sleep(1)
             self.workers_exit_event.clear()
 
-        # self.workers = [Process(
-        #     target=self.worker_func,
-        #     # args=(self.workers_exit_event,)
-        #     # args=(self.process_count,)
-        #     # args=(self.contents_num, self.content_list, self.data_queue, self.process_count, self.lock,
-        #     #       self.workers_exit_event, self.tokenizer)
-        # ) for i in range(self.num_worker)]
-        # for w in self.workers:
-        #     w.start()
         self.workers = []
         for i in range(self.num_worker):
             end_event = Event()
@@ -128,17 +117,21 @@ class FileSegmentsDataloader(Dataloader):
 
     def worker_watcher_func(self):
         try:
+            lf_flag = False  # rload file flag
             while not self.watcher_exit_event.is_set():
-
                 # do this finally
-                # logger.debug(
-                #     f'current process_count: {self.dataloader.process_count.value}, data_q_size: {self.dataloader.data_queue.qsize()}')
-                if self.current_file is None or \
-                        (self.process_count.value // self.change_file_iters > \
-                         self.change_file_times.value):
+                if self.change_file_iters is not None:
+                    if self.current_file is None or \
+                            (self.process_count.value // self.change_file_iters > self.change_file_times.value):
+                        lf_flag = True
+                else:
+                    if self.process_count.value>0 and self.current_file_process_num.value >= len(self.content_list):
+                        lf_flag = True
+                if lf_flag:
                     self.rload_file()
                     self.arrange_workers()
                     logger.debug(f'end of arranging workers.')
+                    lf_flag = False
                 time.sleep(0.2)
         except Exception as e:
             import traceback
@@ -147,9 +140,7 @@ class FileSegmentsDataloader(Dataloader):
         logger.warning("WorkerWatcher is exiting.")
 
     def worker_func(self, end_event=None):#contents_num, content_list, queue, process_count, lock, workers_exit, tokenizer):  # 进程
-        logger.debug(f'new worker{mp.current_process().name} start.')
         while not self.workers_exit_event.is_set():
-            # logger.deubg(f'worker process: {mp.current_process()}, exit_event state: {self.workers_exit_event.is_set()}')
             try:
                 if self.contents_num.value == 0:
                     return
@@ -164,35 +155,15 @@ class FileSegmentsDataloader(Dataloader):
                 content = sample['content']
                 text = '\n'.join([title, content])
                 token_ids = self.tokenizer.encode(text, bos=True, eos=True)
-                # logger.debug(f'{mp.current_process()}, before putting data_queue, data_queue_size: {self.data_queue.qsize()}/{self.data_queue._maxsize}')
                 self.data_queue.put(token_ids)
-                # logger.debug(f'{mp.current_process()}, after putting data_queue, and before locking')
                 self.lock.acquire()
-                # process_count.value+=1
                 self.process_count.value += 1
-                # logger.debug(f'{mp.current_process()}, after process_count adding')
+                self.current_file_process_num.value += 1
                 self.lock.release()
-                # logger.debug(f'{mp.current_process()}, after locking')
-
-                # logger.debug(f"Worker {mp.current_process().name} added data to queue")
             except Exception as e:
                 logger.error(str(e))
                 pass
-        # self.data_queue.cancel_join_thread()  # Kernel code for subprocess exits normally
         logger.debug(f'{mp.current_process().name}, workers_exit_event is set. data queue: {self.data_queue.qsize()}/{self.data_queue._maxsize}')
         end_event.set()
         return
-        # mp.current_process().close()
-
-    # def collate_fn(self):
-    #     raise NotImplementedError
-
-    #
-    # class WorkerWatcher(Thread):
-    #     def __init__(self, dataloader_instance, num_proc=8):
-    #         super().__init__()
-    #         self.dataloader = dataloader_instance
-    #
-    #     def run(self, *args,):
-    #         pass
 
