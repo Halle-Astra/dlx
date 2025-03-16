@@ -42,6 +42,7 @@ def get_args():
     args_helper.add_argument('--save_folder', type=str,
                              default='models_pretrain_test')
     args_helper.add_argument('--accumulate', type=int, default=1)
+    args_helper.add_argument('--eval_log_iters', type=int, default=200000)
     args_helper.add_argument('--resume', action='store_true')
     args_helper.add_argument('--max_length', default=2048, type=int)
     # args_helper.add_argument('--world_size', default=1, type=int)
@@ -102,8 +103,8 @@ if __name__ == '__main__':
     fs = glob.glob(wudao_root+'/*')
     random.seed(0)
     random.shuffle(fs)
-    val_files = fs[:2]
-    train_files = fs[2:]
+    val_files = fs[:1]
+    train_files = fs[1:2]
     train_dataset = WuDao_Dataset(train_files, tokenizer, args.max_length)
     val_dataset = WuDao_Dataset(val_files, tokenizer, args.max_length)
 
@@ -114,10 +115,12 @@ if __name__ == '__main__':
         collate_fn=create_collate_fn_normal_batch(tokenizer, args.max_length),
         sampler=train_sampler
     )
+    val_sampler = DistributedSampler(val_dataset, shuffle=False) if dist.is_initialized() else None
     val_dataloader = torch.utils.data.DataLoader(
         val_dataset,
         batch_size=1, num_workers=12,
-        collate_fn=create_collate_fn_normal_batch(tokenizer, args.max_length)
+        collate_fn=create_collate_fn_normal_batch(tokenizer, args.max_length),
+        sampler=val_sampler
     )
 
     trainer = AutoRegressiveTrainer(
@@ -136,6 +139,7 @@ if __name__ == '__main__':
         save_iters=80000,
         save_folder=args.save_folder,
         accumulate_iters=args.accumulate,
-        eval_dataloader=val_dataloader
+        eval_dataloader=val_dataloader,
+        eval_log_iters=args.eval_log_iters
     )
     trainer.start()

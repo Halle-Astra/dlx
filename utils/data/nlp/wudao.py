@@ -78,6 +78,14 @@ class WuDao_Dataset(Dataset):
         self.data = self.manager.list()
         self.load_file(self.current_file_index)
 
+        samples_num = 0
+        for file in self.files:
+            with open(file) as f:
+                data = json.load(f)
+                samples_num += len(data)
+            f.close()
+        self.samples_num = samples_num
+
     def load_file(self, file_index):
         file_path = self.files[file_index]
         logger.debug('local rank: {}, load file: {}'.format(os.getenv('LOCAL_RANK', -1), file_path))
@@ -94,12 +102,14 @@ class WuDao_Dataset(Dataset):
             ))
 
     def __len__(self):
-        return 59132213
+        return self.samples_num#59132213
 
     def __getitem__(self, index):
         logger.debug('local rank: {}, index: {}'.format(
             os.getenv('LOCAL_RANK', -1), index
         ))
+        if index >= self.__len__():
+            raise StopIteration
         if not dist.is_initialized():
             stop_border = sum(self.file_lens)
             # condition = index == sum(self.file_lens)

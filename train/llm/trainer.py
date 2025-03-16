@@ -143,11 +143,11 @@ class AutoRegressiveTrainer(BaseTrainer):
         #         initialize_model_parallel(model_parallel_size)
 
         # if self.world_size > 1:
-        if dist.is_initialized(): self.model = DDP(self.model.cuda())
+        if dist.is_initialized(): self.model = DDP(self.model.to(self.device))
         local_rank = dist.get_rank() if dist.is_initialized() else -1
         self.local_rank = local_rank
 
-    def log_training(self, train_loss, valid_batch_ratio=None, batch_cost=None):
+    def log_with_logger(self, train_loss, valid_batch_ratio=None, batch_cost=None,):
         info_string = [];
         sep = ' | '
         # info_string.append(f'step: {self.cur_step}/{self.dataloader.steps}')
@@ -181,9 +181,9 @@ class AutoRegressiveTrainer(BaseTrainer):
             # dist.barrier()
             self.optimizer.step()
         _time_end_optimizer = timer.mark()
-        logger.debug(f'time of optim: {_time_end_optimizer - _time_begin_optimzer_step}')
-        self.optimizer.zero_grad()  # 8成是写错位置了， 后面再改
-        logger.debug('local rank' + str(os.getenv('LOCAL_RANK', -1)) + ', after zero_grad')
+        self.optimizer.zero_grad()
+        logger.debug('local rank' + str(os.getenv('LOCAL_RANK', -1)) + ', after zero_grad' +
+                     f'time of optim: {_time_end_optimizer - _time_begin_optimzer_step}')
 
     def _backward(self, loss):
         if self.amp:
@@ -216,6 +216,79 @@ class AutoRegressiveTrainer(BaseTrainer):
         else:
             self._start_without_profile()
 
+    def log(self, loss, valid_batch_nums, input_x, output, time_mem=None, stage='train', ppl=None):
+        if isinstance(loss, torch.Tensor):
+            loss_show = None if loss.item() == 0 else loss.item()
+        else:
+            loss_show = loss
+        if stage == 'train':
+            valid_batch_ratio = valid_batch_nums / self.train_log_iters if self.cur_step > 0 else None
+        else:
+            valid_batch_ratio = -1
+        if time_mem is None: time_mem = dict(batch_cost=None)
+        self.log_with_logger(
+            loss_show,
+            valid_batch_ratio,
+            time_mem['batch_cost']
+        )
+
+        if self.summary_writer is not None and loss_show is not None and valid_batch_ratio is not None:
+            if ppl is None: ppl = math.exp(loss.detach().cpu().item())
+            self.summary_writer.add_scalar(f'{stage}/loss', loss_show, self.cur_step)
+            self.summary_writer.add_scalar(f'{stage}/ppl', ppl, self.cur_step)
+            self.summary_writer.add_scalar(f'{stage}/valid batch ratio', valid_batch_ratio, self.cur_step)
+            self.summary_writer.add_scalar(f'{stage}/tokens num', self.tokens_num, self.cur_step)
+            if self.tokenizer is not None:
+                input_ids = input_x.detach().cpu().numpy()[0]
+                input_text = self.tokenizer.decode(input_ids)
+                output_ids = output.detach().cpu().numpy()[0].argmax(axis=-1)
+                output_text = self.tokenizer.decode(output_ids)
+                entire_text = '{:=^40}\n{}\n{:=^40}\n{}'.format('input', input_text, 'output', output_text)
+                self.summary_writer.add_text(f'{stage}/inspecting text', entire_text, self.cur_step)
+                logger.info('local rank: {}, '.format(os.getenv('LOCAL_RANK', -1)) +
+                            'entire text: \n' + entire_text)
+
+    def forward_and_compute_loss(self, x, label, *args, **other_input_args):
+        input_x = x
+        other_args = other_input_args
+        if not self.amp:
+            output = self.model(input_x, **other_args)
+            loss = self.loss_module(output, label)
+        else:
+            with autocast():
+                output = self.model(input_x, **other_args)
+                loss = self.loss_module(output, label)
+        return output, loss
+
+    def evaluate(self):
+        eval_loss = 0
+        ppl_tokens_num = 0
+        ppl = 0
+        bar = tqdm.tqdm(total=len(self.eval_dataloader))
+        for i, batch in enumerate(self.eval_dataloader):
+            input_x, label, o_args = batch
+            input_x, label = input_x.to(self.device), label.to(self.device)
+            output_temp, loss_temp = self.forward_and_compute_loss(input_x, label, **o_args)
+            loss_temp = loss_temp.detach().cpu().item()
+            eval_loss += loss_temp/ len(self.eval_dataloader)
+            ppl_tokens_num_temp = o_args.get('tokens_num', 0) - 1
+            ppl_tokens_num += ppl_tokens_num_temp
+            ppl += loss_temp * ppl_tokens_num_temp
+            bar.update(1)
+        if dist.is_initialized():
+            ppl_tokens_num, ppl = torch.tensor(ppl_tokens_num, device=self.device), torch.tensor(ppl, device=self.device)
+            dist.all_reduce(ppl_tokens_num); dist.all_reduce(ppl)
+            ppl_tokens_num, ppl = ppl_tokens_num.cpu().item(), ppl.detach().cpu().item()
+            eval_loss = torch.tensor(eval_loss, device=self.device)
+            dist.all_reduce(eval_loss, op=dist.ReduceOp.SUM)
+            eval_loss = eval_loss.detach().cpu().item()
+            eval_loss /= dist.get_world_size()
+
+        ppl /= ppl_tokens_num
+        ppl = math.exp(ppl)
+        bar.close()
+        self.log(eval_loss, None, input_x, output_temp, None, 'validate', ppl)
+
     def _start_main_routine(self, prof=None):
         prof_stopped_flag = False
         valid_batch_nums = 0
@@ -236,7 +309,7 @@ class AutoRegressiveTrainer(BaseTrainer):
                         i
                     ))
                     continue
-                dist.barrier()
+                if dist.is_initialized(): dist.barrier()
                 # self.step += 1
                 input_x, label, other_args = batch
                 input_x = input_x.to(self.device)
@@ -246,19 +319,9 @@ class AutoRegressiveTrainer(BaseTrainer):
                 logger.debug(
                     f'{self.cur_step}, cost of catching batch: {_time_got_batch - _time_wait_batch}s')  # logger.debug(f'{self.cur_step}, the rest of batches: {self.dataloader._data_list_length}')                # logger.debug(f'the shape of input_x is {input_x.shape}')
 
-                if not self.amp:
-                    output = self.model(input_x, **other_args)
-                    _time_end_forward = timer.mark()
-                    logger.debug(f'cost of forward :{_time_end_forward - _time_got_batch}')
-                    loss = self.loss_module(output, label)
-                else:
-                    with autocast():
-                        output = self.model(input_x, **other_args)
-                        _time_end_forward = timer.mark()
-                        logger.debug(f'cost of forward :{_time_end_forward - _time_got_batch}')
-                        loss = self.loss_module(output, label)
-                _time_end_loss = timer.mark()
-                logger.debug(f'cost of computing loss: {_time_end_loss - _time_end_forward}')
+                output, loss = self.forward_and_compute_loss(input_x, label, **other_args)
+                _time_end_forward = _time_end_loss = timer.mark()
+                logger.debug(f'cost of forwarding and computing loss: {_time_end_loss - _time_end_forward}')
                 # print(loss.item())
 
                 valid_batch_nums += 1 if loss.item() > 0 else 0
@@ -267,7 +330,7 @@ class AutoRegressiveTrainer(BaseTrainer):
 
                 if loss > 0: self._backward(loss / self.accumulate_iters)
 
-                if self.cur_step % self.accumulate_iters == 0:# and loss_accumulated.item() > 0:
+                if self.cur_step % self.accumulate_iters == 0:  # and loss_accumulated.item() > 0:
                     # loss.backward()  # retain_graph=True)
                     self.update_params()
                     # loss_accumulated = torch.tensor(0, device=self.device)
@@ -281,41 +344,21 @@ class AutoRegressiveTrainer(BaseTrainer):
                 # other minor operations
                 _time_mem['batch_cost'].append(_time_got_batch - _time_wait_batch)
                 tokens_of_batch = torch.tensor([other_args.get('tokens_num', 0)]).to(self.device)
-                dist.all_reduce(tokens_of_batch)
+                if dist.is_initialized(): dist.all_reduce(tokens_of_batch)
                 self.tokens_num += tokens_of_batch.item()
                 del tokens_of_batch
                 self.cur_step += 1
 
                 # log training states
                 if self.cur_step % self.train_log_iters == 0:
-                    loss_show = None if loss.item() == 0 else loss.item()
-                    valid_batch_ratio = valid_batch_nums / self.train_log_iters if self.cur_step > 0 else None
-                    self.log_training(loss_show,
-                                      valid_batch_ratio,
-                                      _time_mem['batch_cost']
-                                      )
+                    self.log(loss, valid_batch_nums, input_x, output, _time_mem)
                     valid_batch_nums = 0
                     _time_mem['batch_cost'].clear()
-
-                    if self.summary_writer is not None and loss_show is not None and valid_batch_ratio is not None:
-                        self.summary_writer.add_scalar('train/loss', loss_show, self.cur_step)
-                        self.summary_writer.add_scalar('train/ppl', math.exp(loss.detach().cpu().item()), self.cur_step)
-                        self.summary_writer.add_scalar('train/valid batch ratio', valid_batch_ratio, self.cur_step)
-                        self.summary_writer.add_scalar('train/tokens num', self.tokens_num, self.cur_step)
-                        if self.tokenizer is not None:
-                            input_ids = input_x.detach().cpu().numpy()[0]
-                            input_text = self.tokenizer.decode(input_ids)
-                            output_ids = output.detach().cpu().numpy()[0].argmax(axis=-1)
-                            output_text = self.tokenizer.decode(output_ids)
-                            entire_text = '{:=^40}\n{}\n{:=^40}\n{}'.format('input', input_text, 'output', output_text)
-                            self.summary_writer.add_text('inspecting text', entire_text, self.cur_step)
-                            logger.info('local rank: {}, '.format(os.getenv('LOCAL_RANK', -1)) +
-                                        'entire text: \n' + entire_text)
 
                 # log evaluating states
                 eval_loss = -1
                 if self.cur_step % self.eval_log_iters == 0 and self.eval_dataloader is not None:
-                    pass
+                    self.evaluate()
 
                 # profiling
                 prof.step() if prof is not None else ...
@@ -333,7 +376,6 @@ class AutoRegressiveTrainer(BaseTrainer):
                 # checking processes
                 active_processes = multiprocessing.active_children()
                 logger.debug(f"Active processes: {len(active_processes)}")
-                # logger.debug(f'cur_step: {self.cur_step}, the rest of batches: {self.dataloader._data_list_length}, len: {len(self.dataloader.data_list)}')
 
                 bar.update(1)
             self.save(loss, eval_loss, tokens_num=self.tokens_num)
