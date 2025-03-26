@@ -302,82 +302,85 @@ class AutoRegressiveTrainer(BaseTrainer):
             skip_num = self.cur_step % len(self.dataloader)
             bar.update(skip_num)
             for i, batch in enumerate(self.dataloader):
-                if i < skip_num:
-                    logger.debug('local rank: {}, skip logic, skip_num: {}, current i: {}'.format(
-                        os.getenv('LOCAL_RANK', -1),
-                        skip_num,
-                        i
-                    ))
-                    continue
-                if dist.is_initialized(): dist.barrier()
-                # self.step += 1
-                input_x, label, other_args = batch
-                input_x = input_x.to(self.device)
-                label = label.to(self.device)
+                try:
+                    if i < skip_num:
+                        logger.debug('local rank: {}, skip logic, skip_num: {}, current i: {}'.format(
+                            os.getenv('LOCAL_RANK', -1),
+                            skip_num,
+                            i
+                        ))
+                        continue
+                    if dist.is_initialized(): dist.barrier()
+                    # self.step += 1
+                    input_x, label, other_args = batch
+                    input_x = input_x.to(self.device)
+                    label = label.to(self.device)
 
-                _time_got_batch = timer.mark()
-                logger.debug(
-                    f'{self.cur_step}, cost of catching batch: {_time_got_batch - _time_wait_batch}s')  # logger.debug(f'{self.cur_step}, the rest of batches: {self.dataloader._data_list_length}')                # logger.debug(f'the shape of input_x is {input_x.shape}')
+                    _time_got_batch = timer.mark()
+                    logger.debug(
+                        f'{self.cur_step}, cost of catching batch: {_time_got_batch - _time_wait_batch}s')  # logger.debug(f'{self.cur_step}, the rest of batches: {self.dataloader._data_list_length}')                # logger.debug(f'the shape of input_x is {input_x.shape}')
 
-                output, loss = self.forward_and_compute_loss(input_x, label, **other_args)
-                _time_end_forward = _time_end_loss = timer.mark()
-                logger.debug(f'cost of forwarding and computing loss: {_time_end_loss - _time_end_forward}')
-                # print(loss.item())
+                    output, loss = self.forward_and_compute_loss(input_x, label, **other_args)
+                    _time_end_forward = _time_end_loss = timer.mark()
+                    logger.debug(f'cost of forwarding and computing loss: {_time_end_loss - _time_end_forward}')
+                    # print(loss.item())
 
-                valid_batch_nums += 1 if loss.item() > 0 else 0
-                # loss_accumulated = loss + loss_accumulated;
-                logger.debug('local rank' + str(os.getenv('LOCAL_RANK', -1)) + ', after loss_accumulated');
+                    valid_batch_nums += 1 if loss.item() > 0 else 0
+                    # loss_accumulated = loss + loss_accumulated;
+                    logger.debug('local rank' + str(os.getenv('LOCAL_RANK', -1)) + ', after loss_accumulated');
 
-                if loss > 0: self._backward(loss / self.accumulate_iters)
+                    if loss > 0: self._backward(loss / self.accumulate_iters)
 
-                if self.cur_step % self.accumulate_iters == 0:  # and loss_accumulated.item() > 0:
-                    # loss.backward()  # retain_graph=True)
-                    self.update_params()
-                    # loss_accumulated = torch.tensor(0, device=self.device)
+                    if self.cur_step % self.accumulate_iters == 0:  # and loss_accumulated.item() > 0:
+                        # loss.backward()  # retain_graph=True)
+                        self.update_params()
+                        # loss_accumulated = torch.tensor(0, device=self.device)
 
-                _time_end_backward = timer.mark()
-                logger.debug(f'cost of backward: {_time_end_backward - _time_end_loss}')
+                    _time_end_backward = timer.mark()
+                    logger.debug(f'cost of backward: {_time_end_backward - _time_end_loss}')
 
-                if self.model_is_kv_cache_enabled:
-                    self.model.module.reset_kv_cache()
+                    if self.model_is_kv_cache_enabled:
+                        self.model.module.reset_kv_cache()
 
-                # other minor operations
-                _time_mem['batch_cost'].append(_time_got_batch - _time_wait_batch)
-                tokens_of_batch = torch.tensor([other_args.get('tokens_num', 0)]).to(self.device)
-                if dist.is_initialized(): dist.all_reduce(tokens_of_batch)
-                self.tokens_num += tokens_of_batch.item()
-                del tokens_of_batch
-                self.cur_step += 1
+                except torch.cuda.OutOfMemoryError:
+                    logger.error(f"Local rank: {os.getenv('LOCAL_RANK', -1)} OOM! SAMPLE TOKENS: {other_args.get('tokens_num', -1)}")
+                finally:
+                    # other minor operations
+                    _time_mem['batch_cost'].append(_time_got_batch - _time_wait_batch)
+                    tokens_of_batch = torch.tensor([other_args.get('tokens_num', 0)]).to(self.device)
+                    if dist.is_initialized(): dist.all_reduce(tokens_of_batch)
+                    self.tokens_num += tokens_of_batch.item()
+                    del tokens_of_batch
+                    self.cur_step += 1
 
-                # log training states
-                if self.cur_step % self.train_log_iters == 0:
-                    self.log(loss, valid_batch_nums, input_x, output, _time_mem)
-                    valid_batch_nums = 0
-                    _time_mem['batch_cost'].clear()
+                    # log training states
+                    if self.cur_step % self.train_log_iters == 0:
+                        self.log(loss, valid_batch_nums, input_x, output, _time_mem)
+                        valid_batch_nums = 0
+                        _time_mem['batch_cost'].clear()
 
-                # log evaluating states
-                eval_loss = -1
-                if self.cur_step % self.eval_log_iters == 0 and self.eval_dataloader is not None:
-                    self.evaluate()
+                    # log evaluating states
+                    eval_loss = -1
+                    if self.cur_step % self.eval_log_iters == 0 and self.eval_dataloader is not None:
+                        self.evaluate()
 
-                # profiling
-                prof.step() if prof is not None else ...
-                if prof is not None and self.cur_step > self.profile_steps:
-                    prof.stop()
-                    prof_stopped_flag = True
+                    # profiling
+                    prof.step() if prof is not None else ...
+                    if prof is not None and self.cur_step > self.profile_steps:
+                        prof.stop()
+                        prof_stopped_flag = True
 
-                _time_wait_batch = timer.mark()
-                logger.debug(f'total cost time: {_time_wait_batch - _time_got_batch}')
+                    _time_wait_batch = timer.mark()
+                    logger.debug(f'total cost time: {_time_wait_batch - _time_got_batch}')
 
-                # save parameters
-                if self.cur_step % self.save_iters == 0 and self.cur_step > 0:
-                    self.save(loss, eval_loss, tokens_num=self.tokens_num)
+                    # save parameters
+                    if self.cur_step % self.save_iters == 0 and self.cur_step > 0:
+                        self.save(loss, eval_loss, tokens_num=self.tokens_num)
 
-                # checking processes
-                active_processes = multiprocessing.active_children()
-                logger.debug(f"Active processes: {len(active_processes)}")
-
-                bar.update(1)
+                    # checking processes
+                    active_processes = multiprocessing.active_children()
+                    logger.debug(f"Active processes: {len(active_processes)}")
+                    bar.update(1)
             self.save(loss, eval_loss, tokens_num=self.tokens_num)
             self.cur_epoch += 1
             bar.close()

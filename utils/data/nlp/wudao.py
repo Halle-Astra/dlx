@@ -58,7 +58,7 @@ class WuDao:
 
 # for torch.utils.data.DataLoader
 class WuDao_Dataset(Dataset):
-    def __init__(self, root_or_files, tokenizer, max_length=2048, shuffle=False, random_seed=40):
+    def __init__(self, root_or_files, tokenizer, max_length=2048, shuffle=False, random_seed=40, samples_num=0):
         if isinstance(root_or_files, list):
             self.files = root_or_files
         else:
@@ -78,13 +78,19 @@ class WuDao_Dataset(Dataset):
         self.data = self.manager.list()
         self.load_file(self.current_file_index)
 
-        samples_num = 0
-        for file in self.files:
-            with open(file) as f:
-                data = json.load(f)
-                samples_num += len(data)
-            f.close()
-        self.samples_num = samples_num
+        if samples_num>0:
+            self.samples_num=samples_num
+        else:
+            samples_num = 0
+            for file in self.files:
+                with open(file) as f:
+                    data = json.load(f)
+                    samples_num += len(data)
+                f.close()
+            self.samples_num = samples_num
+        logger.info('local rank: {}, samples_num: {}'.format(
+            os.getenv('LOCAL_RANK', -1), self.samples_num
+        ))
 
     def load_file(self, file_index):
         file_path = self.files[file_index]
@@ -112,6 +118,7 @@ class WuDao_Dataset(Dataset):
             raise StopIteration
         if not dist.is_initialized():
             stop_border = sum(self.file_lens)
+            process_border = stop_border
             # condition = index == sum(self.file_lens)
         else:
             border_temp = sum(self.file_lens)

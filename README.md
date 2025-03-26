@@ -6,10 +6,15 @@ without pretraining code. Such as, Openai and Meta-Llama.
 
 If possible, the models of Computer Vision and Multi-modal will be added, too.
 
+<del>
+
 ## highlights
 
 * powerful and diverse dataloader implementation with multi-processes and multi-threads, such as 
 `FileSegmentsDataloader` to process multi-files under a certain folder. 
+
+</del>
+  
 
 ## test projects
 
@@ -17,6 +22,9 @@ The projects under the module `dlx.test`.
 
 You can also have a quick experience by run 
 `torchrun --nproc_per_node 1 experiments/llama3/pretrain.py`
+
+
+
 
 ## todo 
 * [ ] add another method for file_segments_dataloader to generate sample list.
@@ -26,7 +34,8 @@ You can also have a quick experience by run
 * [x] study the argument `n_head_kv` of Llama3, why it will influence the success of model building
 * [x] add support of AMP
 * [x] rethink the variable `self.change_file_event` and try using it to resolve `list index out of range`
-* [ ] resolve the problem of process exiting failed
+
+[comment]: <> (* [ ] resolve the problem of process exiting failed)
 * [ ] modify the file_segments_dataloader with a start switch, not an automatical start after initializing
 * [ ] add cpu support for debugging purpose
 * [ ] add token calculation for statistic
@@ -36,6 +45,8 @@ You can also have a quick experience by run
 
 ## Documents
 
+<del> 
+
 ### utils.data.dataloader
 
 #### DataLoader
@@ -43,3 +54,5 @@ You can also have a quick experience by run
 If the method `__len__` is not implemented, the step will be set to a number.
 
 现在的问题是总会丢掉最后一个样本，且不好修改这部分的逻辑。
+
+</del>

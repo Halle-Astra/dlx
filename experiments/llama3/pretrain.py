@@ -4,6 +4,7 @@ from dlx.train.llm.trainer import AutoRegressiveTrainer
 import os
 from dlx.models.llm.llama3 import Transformer, ModelArgs
 import torch
+torch.cuda.manual_seed_all(100)
 import json
 from torch.utils.data import Dataset, DataLoader, ConcatDataset
 from fairscale.nn.model_parallel.initialize import (
@@ -45,8 +46,10 @@ def get_args():
     args_helper.add_argument('--eval_log_iters', type=int, default=200000)
     args_helper.add_argument('--resume', action='store_true')
     args_helper.add_argument('--max_length', default=2048, type=int)
+    args_helper.add_argument('--lr', default=1e-5, type=float)
     # args_helper.add_argument('--world_size', default=1, type=int)
     args_helper.add_argument('--batch_size', default=32, type=int)
+    args_helper.add_argument('--grad_clip', default=None, type=float)
     # args_helper.add_argument('--local_rank', default=-1, type=int)
     args_helper.add_argument('--debug', action='store_true')
     args = args_helper.parse_args()
@@ -76,9 +79,22 @@ if __name__ == '__main__':
     model_parallel_size = world_size if args.model_parallel_size is None else args.model_parallel_size
     init_parallel(model_parallel_size) if world_size > 1 else ...
 
+    # margs = {
+    #     "dim": 512,
+    #     "n_layers": 8,
+    #     "n_heads": 4,
+    #     "n_kv_heads": 2,
+    #     "vocab_size": 128256,
+    #     "multiple_of": 1024,
+    #     "ffn_dim_multiplier": 1.3,
+    #     "norm_eps": 1e-05,
+    #     "rope_theta": 500000.0,
+    #     "max_seq_len": args.max_length,
+    #     "mode": "train"
+    # }
     margs = {
-        "dim": 512,
-        "n_layers": 8,
+        "dim": 1024,
+        "n_layers": 16,
         "n_heads": 4,
         "n_kv_heads": 2,
         "vocab_size": 128256,
@@ -95,7 +111,7 @@ if __name__ == '__main__':
 
     # others
     tokenizer = Tokenizer()
-    optimizer = Adam(model.parameters(), lr=1e-5)
+    optimizer = Adam(model.parameters(), lr=args.lr)
     summary_writer = SummaryWriter(args.tensorboard_dir) if args.tensorboard_dir else None
 
     # dataloader
@@ -104,9 +120,9 @@ if __name__ == '__main__':
     random.seed(0)
     random.shuffle(fs)
     val_files = fs[:1]
-    train_files = fs[1:2]
-    train_dataset = WuDao_Dataset(train_files, tokenizer, args.max_length)
-    val_dataset = WuDao_Dataset(val_files, tokenizer, args.max_length)
+    train_files = fs[1:]
+    train_dataset = WuDao_Dataset(train_files, tokenizer, args.max_length, samples_num=59020324)
+    val_dataset = WuDao_Dataset(val_files, tokenizer, args.max_length, samples_num=111889)
 
     train_sampler = DistributedSampler(train_dataset, shuffle=False) if dist.is_initialized() else None
     train_dataloader = torch.utils.data.DataLoader(
@@ -130,7 +146,8 @@ if __name__ == '__main__':
         tokenizer=tokenizer,
         model_is_kv_cache_enabled=False,
         ids_dtype=torch.long, parallel='ddp',
-        grad_clip=None, device='cuda',
+        grad_clip=args.grad_clip,
+        device='cuda',
         amp=True, profile_dir=None,
         profile_steps=None,
         vocab_size=margs.vocab_size,
