@@ -46,12 +46,19 @@ def get_args():
     args_helper.add_argument('--eval_log_iters', type=int, default=200000)
     args_helper.add_argument('--resume', action='store_true')
     args_helper.add_argument('--max_length', default=2048, type=int)
-    args_helper.add_argument('--lr', default=1e-5, type=float)
+    args_helper.add_argument('--lr', default=1e-5, type=float, help='If you want to enable find_lr ability, set it to -1.')
     # args_helper.add_argument('--world_size', default=1, type=int)
     args_helper.add_argument('--batch_size', default=32, type=int)
     args_helper.add_argument('--grad_clip', default=None, type=float)
     # args_helper.add_argument('--local_rank', default=-1, type=int)
     args_helper.add_argument('--debug', action='store_true')
+    args_helper.add_argument('--rrank', action='store_true', help='record rank')
+    args_helper.add_argument('--mm', action='store_true', help='enable metric matrix as attention core')
+    args_helper.add_argument('--sched_lr_iters', default=-1, type=int , help='schedule learning rate')
+    args_helper.add_argument('--nl', action='store_true', help='normalize loss by max_length')
+    args_helper.add_argument('--record_bad_batch_folder', default='', help='specify a folder to save batches which is '
+                                                                           'may be the reason of loss spike')
+    # args_helper.add_argument('--nl', action='store_true', help='normalize loss by tokens_num')
     args = args_helper.parse_args()
     return args
 
@@ -79,6 +86,7 @@ if __name__ == '__main__':
     model_parallel_size = world_size if args.model_parallel_size is None else args.model_parallel_size
     init_parallel(model_parallel_size) if world_size > 1 else ...
 
+    # 0.168B version
     # margs = {
     #     "dim": 512,
     #     "n_layers": 8,
@@ -92,6 +100,8 @@ if __name__ == '__main__':
     #     "max_seq_len": args.max_length,
     #     "mode": "train"
     # }
+
+    # 0.5B version
     margs = {
         "dim": 1024,
         "n_layers": 16,
@@ -103,7 +113,8 @@ if __name__ == '__main__':
         "norm_eps": 1e-05,
         "rope_theta": 500000.0,
         "max_seq_len": args.max_length,
-        "mode": "train"
+        "mode": "train",
+        'metric_matrix_attention': args.mm
     }
     margs = ModelArgs(**margs)
     model = Transformer(margs)
@@ -111,7 +122,7 @@ if __name__ == '__main__':
 
     # others
     tokenizer = Tokenizer()
-    optimizer = Adam(model.parameters(), lr=args.lr)
+    optimizer = Adam(model.parameters(), lr=max(0, args.lr))
     summary_writer = SummaryWriter(args.tensorboard_dir) if args.tensorboard_dir else None
 
     # dataloader
@@ -139,6 +150,11 @@ if __name__ == '__main__':
         sampler=val_sampler
     )
 
+    if args.nl:
+        trainer_max_length = args.max_length
+    else:
+        trainer_max_length = -1
+
     trainer = AutoRegressiveTrainer(
         model, train_dataloader,
         optimizer=optimizer,
@@ -157,6 +173,12 @@ if __name__ == '__main__':
         save_folder=args.save_folder,
         accumulate_iters=args.accumulate,
         eval_dataloader=val_dataloader,
-        eval_log_iters=args.eval_log_iters
+        eval_log_iters=args.eval_log_iters,
+        enable_record_rank=args.rrank,
+        schedule_lr_iters=args.sched_lr_iters,
+        norm_loss=args.nl,
+        max_length=trainer_max_length,
+        enable_find_lr=args.lr==-1,
+        record_bad_batch_folder=args.record_bad_batch_folder
     )
     trainer.start()

@@ -3,6 +3,8 @@ import glob
 import json
 import numpy as np
 import torch
+import tqdm
+
 from dlx.tokenizer.tiktoken import Tokenizer
 from torch.utils.data import Dataset
 from multiprocessing import Value, RLock, Manager
@@ -58,7 +60,13 @@ class WuDao:
 
 # for torch.utils.data.DataLoader
 class WuDao_Dataset(Dataset):
-    def __init__(self, root_or_files, tokenizer, max_length=2048, shuffle=False, random_seed=40, samples_num=0):
+    def __init__(self, root_or_files, tokenizer,
+                 max_length=2048,
+                 shuffle=False,
+                 random_seed=40,
+                 samples_num=0,
+                 # drop_short=False
+                 ):
         if isinstance(root_or_files, list):
             self.files = root_or_files
         else:
@@ -108,7 +116,7 @@ class WuDao_Dataset(Dataset):
             ))
 
     def __len__(self):
-        return self.samples_num#59132213
+        return self.samples_num  # 59132213
 
     def __getitem__(self, index):
         logger.debug('local rank: {}, index: {}'.format(

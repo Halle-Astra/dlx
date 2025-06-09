@@ -23,7 +23,11 @@ The projects under the module `dlx.test`.
 You can also have a quick experience by run 
 `torchrun --nproc_per_node 1 experiments/llama3/pretrain.py`
 
+A full example:
 
+``` 
+python experiments/llama3/pretrain.py --max_length=2048 --batch_size=1 --save_folder=train_0326_lr1e-4_gradaccu256_gradclip=0.25_larger=v1 --tensorboard_dir logs/0326_lr1e-4_gradaccu=256_gradclip=0.25_larger=v1 --eval_log_iters 500000 --lr 1e-4 --accumulate 256 --grad_clip=0.25 --rrank 2>&1 | tee pretrain_lr1e-4_gradaccu=256_gradclip=0.25_rrank_larger=v1.log
+```
 
 
 ## todo 
