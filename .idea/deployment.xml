@@ -2,10 +2,18 @@
 <project version="4">
   <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
+      <paths name="3080">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/.." web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="3080-linux">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/halle/programs/" local="$PROJECT_DIR$/.." web="/" />
+            <mapping deploy="/home/halle/workspace/programs/" local="$PROJECT_DIR$/.." web="/" />
           </mappings>
         </serverdata>
       </paths>

@@ -5,57 +5,12 @@ import numpy as np
 import torch
 import tqdm
 
-from dlx.tokenizer.tiktoken import Tokenizer
 from torch.utils.data import Dataset
 from multiprocessing import Value, RLock, Manager
 import time
 import random
 from loguru import logger
 import torch.distributed as dist
-
-
-# For file segments dataloader
-class WuDao:
-    def __init__(self, root, tokenizer, dtype=torch.long, max_tokens=150, device='cpu'):
-        self.files = glob.glob(os.path.join(root, '*.json'))
-        self.tokenizer = tokenizer
-        self.max_tokens = max_tokens
-        self.dtype = dtype
-        self.device = device
-
-    def open_file_func(self, file):
-        with open(file) as f:
-            contents = json.load(f)
-        return contents
-
-    def __len__(self):
-        return 59132213
-
-    def collate_fn(self, batch):
-        b_lengths = [len(i) for i in batch]
-        min_b_length = min(b_lengths)
-        max_b_length = max(b_lengths)
-        # test_max_length = 150
-        if max_b_length > self.max_tokens:  # 2048:
-            batch = [i[:self.max_tokens] for i in batch]
-            max_b_length = self.max_tokens
-
-        bs = len(batch)
-        input_ndarray = np.ones((bs, max_b_length)) * self.tokenizer.pad_id
-        for i in range(bs):
-            input_ndarray[i, :b_lengths[i]] = batch[i]
-
-        input_x = torch.tensor(input_ndarray, dtype=self.dtype)  # .to(self.device)
-        input_y = input_x[:, 1:]
-        input_y = input_y  # .flatten()
-
-        return [
-            input_x, input_y,
-            {
-                'start_pos': 0,
-                'tokens_num': sum([len(i) for i in batch])
-            }
-        ]
 
 
 # for torch.utils.data.DataLoader
@@ -86,8 +41,8 @@ class WuDao_Dataset(Dataset):
         self.data = self.manager.list()
         self.load_file(self.current_file_index)
 
-        if samples_num>0:
-            self.samples_num=samples_num
+        if samples_num > 0:
+            self.samples_num = samples_num
         else:
             samples_num = 0
             for file in self.files:
@@ -172,8 +127,53 @@ class WuDao_Dataset(Dataset):
         return token_ids
 
 
+# For file segments dataloader
+class WuDao:
+    def __init__(self, root, tokenizer, dtype=torch.long, max_tokens=150, device='cpu'):
+        self.files = glob.glob(os.path.join(root, '*.json'))
+        self.tokenizer = tokenizer
+        self.max_tokens = max_tokens
+        self.dtype = dtype
+        self.device = device
+
+    def open_file_func(self, file):
+        with open(file) as f:
+            contents = json.load(f)
+        return contents
+
+    def __len__(self):
+        return 59132213
+
+    def collate_fn(self, batch):
+        b_lengths = [len(i) for i in batch]
+        min_b_length = min(b_lengths)
+        max_b_length = max(b_lengths)
+        # test_max_length = 150
+        if max_b_length > self.max_tokens:  # 2048:
+            batch = [i[:self.max_tokens] for i in batch]
+            max_b_length = self.max_tokens
+
+        bs = len(batch)
+        input_ndarray = np.ones((bs, max_b_length)) * self.tokenizer.pad_id
+        for i in range(bs):
+            input_ndarray[i, :b_lengths[i]] = batch[i]
+
+        input_x = torch.tensor(input_ndarray, dtype=self.dtype)  # .to(self.device)
+        input_y = input_x[:, 1:]
+        input_y = input_y  # .flatten()
+
+        return [
+            input_x, input_y,
+            {
+                'start_pos': 0,
+                'tokens_num': sum([len(i) for i in batch])
+            }
+        ]
+
+
 if __name__ == '__main__':
     from dlx.utils.data.nlp.file_segments_dataloader import FileSegmentsDataloader
+    from dlx.tokenizer.tiktoken import Tokenizer
 
     root = '/dataset/fd5061f6/chinese_data/WuDao/'
     wudao_dataset = WuDao(root, Tokenizer())
