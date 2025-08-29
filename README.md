@@ -60,3 +60,5 @@ If the method `__len__` is not implemented, the step will be set to a number.
 现在的问题是总会丢掉最后一个样本，且不好修改这部分的逻辑。
 
 </del>
+
+使用next而非使用for循环，是因为find_lr里要取数据，除非把find_lr平摊在for循环里。
