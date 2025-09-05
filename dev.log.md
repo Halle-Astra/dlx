@@ -536,3 +536,8 @@ TypeError: Dataset() takes no arguments
 
 
 感觉不得不承认，如果不像glm那样子处理完数据再保存，实在是没法实现shuffle
+
+# 20250906
+
+其实应该再改一次方案，将next方案换为用下标索引就行，这样子可以evaluate部分和train部分比较容易统一。
+现在采用next的方案，evaluate部分应该是要修改一次。
