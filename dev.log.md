@@ -533,3 +533,6 @@ TypeError: Dataset() takes no arguments
 
 ```
 经过以上的代码，验证了huggingface的类可以作为一个普通的成员用于getitem方法，适用于DataLoader，因此可以更简单的使用。
+
+
+感觉不得不承认，如果不像glm那样子处理完数据再保存，实在是没法实现shuffle

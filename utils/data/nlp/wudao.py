@@ -73,6 +73,17 @@ class WuDao_Dataset(Dataset):
     def __len__(self):
         return self.samples_num  # 59132213
 
+    def reset(self):
+        """
+        This func must be called before iter(), if it is neccessary.
+        :return:
+        """
+        self.current_file_index = 0
+        self.load_file(self.current_file_index)
+        with self.lock:
+            self.process_count.value = 0
+
+
     def __getitem__(self, index):
         logger.debug('local rank: {}, index: {}'.format(
             os.getenv('LOCAL_RANK', -1), index
