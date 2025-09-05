@@ -34,12 +34,12 @@ class HF_Dataset:
         """
         self.root = root
 
-        dataset = load_dataset(root,split=split,trust_remote_code=True)
+        dataset = load_dataset(root, split=split, trust_remote_code=True)
         self.shuffle = shuffle
         if self.shuffle:
             random.seed(random_seed)
             dataset = dataset.shuffle(seed=random_seed)
-            #dataset = dataset.flatten_indices()
+            # dataset = dataset.flatten_indices()
         self.samples_num = len(dataset)
         logger.info('local rank: {}, samples_num: {}, dataset root: {}'.format(
             os.getenv('LOCAL_RANK', -1), self.samples_num, root
@@ -53,11 +53,12 @@ class HF_Dataset:
             seps = [
                 '\n', '  ', '\n\n',
                 '\n{}\n'.format(
-                    random.choice('=-+_@#$%')*random.randint(3,40)
+                    random.choice('=-+_@#$%') * random.randint(3, 40)
                 )
             ]
             sep = random.choice(seps)
             return sep
+
         inputs = []
         if list(sample.keys()) == ['text']:
             return sample
@@ -67,7 +68,7 @@ class HF_Dataset:
                 inputs.append(sample['prompt'])
             if 'input' in sample:
                 inputs.append(sample['input'])
-            if len(inputs)==0:
+            if len(inputs) == 0:
                 logger.error('dataset root {} samples have no prompt and input keys.\nsample keys: {}'.format(
                     self.root, list(sample.keys())
                 ))
@@ -83,6 +84,6 @@ if __name__ == "__main__":
 
     root = '/workspace/downloads/Skylion007/openwebtext'
     tokenizer = Tokenizer()
-    dataset = HF_Dataset(root, tokenizer,shuffle=True)
+    dataset = HF_Dataset(root, tokenizer, shuffle=True)
     for example in dataset:
         print(example)

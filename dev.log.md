@@ -478,3 +478,58 @@ conda's operating environment.
 关于loss下降太慢的问题，可能还是有点问题，要不考虑，将所有能够促使loss下降的梯度方向累积下来，做滑动平均，舍弃那些垃圾的梯度方向。也就是不只是单纯的给整体的梯度来算东西。
 而是除了历史梯度以外，还要考虑以往的loss反馈。
 但是历史梯度的存储非常费显存，估计是要做多进程的硬盘或内存转显存的操作
+
+# 20250905
+
+```
+>>> def g(s, index):
+...     import time
+...     print('....',int(time.time()), index)
+...     time.sleep(10)
+...     print('----',int(time.time()),index)
+...     return s.dataset[index]
+
+>>> import torch
+>>> from datasets import load_dataset
+>>> a = load_dataset('Skylion007/openwebtext',split='train')
+Loading dataset shards: 100%|█████████████████████████████████████████████████████████████████████████████████████| 80/80 [01:46<00:00,  1.33s/it]
+>>> from torch.utils.data import Dataset
+>>> class A(Dataset):
+...     def __init__(self,dataset):
+...             self.dataset = dataset
+...     def __getitem__(self,index):
+...             return self.dataset[index]
+...
+>>> aa = A(a)
+>>> iter_a = iter(aa)
+>>> next(iter_a)
+
+>>> a
+Dataset({
+    features: ['text'],
+    num_rows: 8013769
+})
+>>> def l(s, ):
+...     return 8013769
+...
+>>> a.__len__ = l
+>>> len(a)
+8013769
+>>> aa = Dataset(a)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: Dataset() takes no arguments
+>>> aa = A(a)
+>>> A.__len__=l
+>>> aa = A(a)
+>>> len(aa)
+8013769
+>>> A.__getitem__ = g
+
+>>> dl = DataLoader(aa,num_workers=8,batch_size=4)
+>>> for i in dl:
+...     print(dl)
+...     break
+
+```
+经过以上的代码，验证了huggingface的类可以作为一个普通的成员用于getitem方法，适用于DataLoader，因此可以更简单的使用。
