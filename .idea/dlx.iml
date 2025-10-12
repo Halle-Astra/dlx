@@ -28,6 +28,7 @@
       <excludeFolder url="file://$MODULE_DIR$/../tensor2tensor" />
       <excludeFolder url="file://$MODULE_DIR$/../voronoi" />
       <excludeFolder url="file://$MODULE_DIR$/../论文" />
+      <excludeFolder url="file://$MODULE_DIR$/../claude_code_platform/venv" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.8 (dreambooth)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
