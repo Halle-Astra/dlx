@@ -18,6 +18,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from copy import deepcopy
 import traceback
+from dlx.utils.train import AnomalyRecorder
 
 
 class PlotHelper:
@@ -44,13 +45,15 @@ class PlotHelper:
 plot_helper = PlotHelper()
 
 
-class BaseTrainer(TrainerMonitor):
+class BaseTrainer(TrainerMonitor, AnomalyRecorder):
     def __init__(self, ):
         self.cur_epoch = 0
         self.cur_step = 0
         self.tokens_num = 0
         self.save_folder = None
         self.accumulate_iters = 1
+
+        super().__init__()
 
     def _backward(self, loss):
         if self.amp:
@@ -153,6 +156,9 @@ class BaseTrainer(TrainerMonitor):
 
         logger.info(f'loaded weights from {folder}')
 
+        # 新增：加载异常样本记录
+        self._load_anomaly_samples()
+
     def evaluate(self):
         eval_loss = 0
         ppl_tokens_num = 0
@@ -161,6 +167,12 @@ class BaseTrainer(TrainerMonitor):
         torch.cuda.empty_cache()
         for i, batch in enumerate(self.eval_dataloader):
             try:
+                # 检查是否应该跳过异常样本
+                # todo: evaluate阶段按理应该不用考虑？ 数据集划分应该导致不可能有样本在这判定为异常样本，但是这样子会不会导致验证集和训练集的分布不一致？
+                if self._should_skip_sample(batch):
+                    logger.info(f"Skipping anomaly sample in evaluation")
+                    continue
+
                 input_x, label, o_args = batch
                 input_x, label = input_x.to(self.device), label.to(self.device)
                 output_temp, loss_temp = self.forward_and_compute_loss(input_x, label, **o_args)
@@ -238,6 +250,13 @@ class BaseTrainer(TrainerMonitor):
         :param hvars: vars of helper
         :return:
         """
+        # 检查是否应该跳过异常样本
+        if self._should_skip_sample(batch):
+            logger.info(f"Skipping anomaly sample at step {self.cur_step}")
+            # 更新计数器但不进行训练
+            self.cur_step += 1
+            return None, -1
+
         valid_batch_nums = hvars.get('valid_batch_nums', 0)
         time_mem = hvars.get('time_mem', None)
         _time_wait_batch = hvars.get('time_wait_batch', 0)
@@ -281,6 +300,21 @@ class BaseTrainer(TrainerMonitor):
             logger.debug(f'cost of backward: {_time_end_backward - _time_end_loss}')
 
             if self.model_is_kv_cache_enabled: self.model.module.reset_kv_cache()
+
+            # 记录loss用于异常检测
+            loss_value = loss.item() if hasattr(loss, 'item') else loss
+            if isinstance(loss_value, torch.Tensor):
+                loss_value = loss_value.item()
+
+            # 更新loss窗口
+            self.previous_losses.append(loss_value)
+            if len(self.previous_losses) > self.loss_window_size:
+                self.previous_losses.pop(0)
+
+            # 检测异常loss并记录样本
+            if len(self.previous_losses) >= 5:  # 至少有5个历史loss值才开始检测
+                if self._is_anomaly_loss(loss_value):
+                    self._record_anomaly_sample(batch, loss_value)
 
         except torch.cuda.OutOfMemoryError:
             logger.error(
