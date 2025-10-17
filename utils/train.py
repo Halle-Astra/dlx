@@ -19,7 +19,7 @@ def save_parameters(save_folder, model, optimizer=None, others=None):
 class AnomalyRecorder:
     def __init__(self):
         # 新增：异常样本记录相关属性
-        self.skip_anomaly_samples = False  # 是否启用跳过异常样本的flag
+        self.skip_anomaly_samples = True  # 是否启用跳过异常样本的flag
         self.anomaly_threshold = 2.0  # 异常检测阈值（loss变化倍数）
         self.anomaly_samples_file = "anomaly_samples.json"  # 异常样本记录文件
         self.anomaly_samples: Set[str] = set()  # 异常样本哈希集合

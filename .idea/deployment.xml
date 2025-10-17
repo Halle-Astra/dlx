@@ -2,7 +2,7 @@
 <project version="4">
   <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
-      <paths name="2*80ti">
+      <paths name="3080">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$/.." web="/" />
@@ -14,6 +14,14 @@
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$/.." web="/" />
+            <mapping deploy="/home/halle/workspace/programs/dlx" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="biai@192.168.2.38:22">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/.." web="/" />
             <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
@@ -21,8 +29,8 @@
       <paths name="main-server">
         <serverdata>
           <mappings>
-            <mapping local="$PROJECT_DIR$/.." web="/" />
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="" local="$PROJECT_DIR$/.." web="/" />
+            <mapping deploy="/home/halle/data/programs/LLMs/GLM/dlx" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

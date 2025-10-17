@@ -208,10 +208,13 @@ class AutoRegressiveTrainer(BaseTrainer):
                     print(traceback.print_exc())
                     break
 
+                _time_begin_train_step = timer.mark()
                 loss, eval_loss = self.train_step(
                     batch,
                     helper_vars
                 )
+                _time_end_train_step = timer.mark()
+                logger.debug('total time of train_step: {}s'.format(_time_end_train_step - _time_begin_train_step))
                 if self.schedule_lr_iters > 0 and self.cur_step % self.schedule_lr_iters == 0:
                     # transfer function find_lr to schedule lr
                     loss, eval_loss = self.find_lr_and_use_best_lr_to_train(hvars=helper_vars)

@@ -124,6 +124,7 @@ class WuDao_Dataset(Dataset):
                 sample = self.data[index]
                 break
             except IndexError as e:
+                logger.warning("IndexErr, sleep 0.5s")
                 time.sleep(0.5)
         title = sample['title']
         content = sample['content']

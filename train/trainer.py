@@ -56,17 +56,13 @@ class BaseTrainer(TrainerMonitor, AnomalyRecorder):
         super().__init__()
 
     def _backward(self, loss):
+        _time_begin_compute_grad = timer.mark()
         if self.amp:
-            _time_begin_compute_grad = timer.mark()
             self.scaler.scale(loss).backward()
-            _time_end_compute_grad = timer.mark()
-            logger.debug(f'time of grad cal: {_time_end_compute_grad - _time_begin_compute_grad}')
-
         else:
-            _time_begin_compute_grad = timer.mark()
             loss.backward()
-            _time_end_compute_grad = timer.mark()
-            logger.debug(f'time of grad cal: {_time_end_compute_grad - _time_begin_compute_grad}')
+        _time_end_compute_grad = timer.mark()
+        logger.debug(f'time of grad cal: {_time_end_compute_grad - _time_begin_compute_grad}')
 
     def init_parallel(self, model_parallel_size=None):
         # if self.world_size > 1:
@@ -314,6 +310,7 @@ class BaseTrainer(TrainerMonitor, AnomalyRecorder):
             # 检测异常loss并记录样本
             if len(self.previous_losses) >= 5:  # 至少有5个历史loss值才开始检测
                 if self._is_anomaly_loss(loss_value):
+                    logger.warning('detected an anomaly sample.')
                     self._record_anomaly_sample(batch, loss_value)
 
         except torch.cuda.OutOfMemoryError:
@@ -534,7 +531,7 @@ class BaseTrainer(TrainerMonitor, AnomalyRecorder):
             self.summary_writer.add_image('find_lr/plot', find_lr_fig, self.cur_step)
         bar.close()
 
-        # 复原traing_bar
+        # 复原training_bar
         if restore_training_bar_flag or 'training_bar' in locals():
             hvars['bar'] = training_bar
         return best_lr, log_lrs, losses, record_batches

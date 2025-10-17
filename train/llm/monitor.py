@@ -134,9 +134,11 @@ class TrainerMonitor:
                 # dist.barrier()
                 self.optimizer.step()
             _time_end_optimizer = timer.mark()
+            # todo: 这个函数居然貌似每次都必定触发？ 这是导致训练速度暴降的罪魁祸首！
             self.record_gradient_norm(postfix='_normclip')
             self.optimizer.zero_grad()
-            logger.debug('local rank' + str(os.getenv('LOCAL_RANK', -1)) + ', after zero_grad' +
+
+            logger.debug('local rank' + str(os.getenv('LOCAL_RANK', -1)) + ', after zero_grad, ' +
                          f'time of optim: {_time_end_optimizer - _time_begin_optimzer_step}')
         else:
             logger.warning('local rank: {}, step: {}, gradients are None!'.format(
